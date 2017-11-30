@@ -1,0 +1,176 @@
+;+++
+;
+; Copyright © 2014 Microsoft, LLC. All rights reserved.
+;
+;---
+
+;++
+;
+; FACILITY:		Catapult  - PCI Filter
+;
+; DESCRIPTION:	This installation file will install the upper-level PCIe root port
+;				filter driver, including the WDF co-installer
+;
+;--
+
+;+
+; Identify this .INF file
+;-
+
+[Version]
+Signature="$WINDOWS NT$"
+Class=System
+ClassGuid={4D36E97D-E325-11CE-BFC1-08002BE10318}
+Provider=%MfgName%
+CatalogFile=CatapultPCIFilter.cat
+DriverVer=08/21/2015,2.4.2070.0
+
+;+
+; Identify the installation media
+;-
+
+[SourceDisksNames]
+1 = %DiskName%,,
+
+;+
+; Identify the files on the installation media
+;-
+
+[SourceDisksFiles]
+CatapultPCIFilter.sys = 1
+WdfCoInstaller01011.dll=1
+
+;+
+; Identify where the files will be copied to
+;-
+
+[DestinationDirs]
+Driver-Files = 12
+CoInstaller-Files = 11
+
+;+
+; Files
+;-
+
+[Driver-Files]
+CatapultPCIFilter.sys
+
+[CoInstaller-Files]
+WdfCoInstaller01011.dll
+
+;+
+; This section prevents the user from being able to load the driver unless the hardware is present
+;-
+
+[ControlFlags]
+;ExcludeFromSelect=*
+
+;+
+; The root of the hierarchy for this file
+;-
+
+[Manufacturer]
+%MfgName% = Compatible, ntamd64
+
+[Compatible.NTamd64]
+// These compatible IDs seem to match all PCIe root ports, so we use these instead of device-specific IDs
+"PCIe root port" = CatapultPCIFilter, PCI\CC_060400
+"PCIe root port" = CatapultPCIFilter, PCI\CC_0604
+
+;+
+; Install the components
+;-
+
+[CatapultPCIFilter.NT]
+Include=machine.inf
+Needs=PCI_DRV
+CopyFiles = Driver-Files
+
+;+
+; Add our service
+;-
+
+[CatapultPCIFilter.NT.Services]
+Include = machine.inf
+Needs = PCI_DRV.Services
+Addservice = CatapultPCIFilter, 0, Add-Service
+
+;+
+; Describe the service
+;-
+
+[Add-Service]
+DisplayName    = %ServiceDesc%
+ServiceType    = 1                  ; SERVICE_KERNEL_DRIVER
+StartType      = 3                  ; SERVICE_DEMAND_START
+ErrorControl   = 1                  ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\CatapultPCIFilter.sys
+LoadOrderGroup = Pnp Filter
+AddReg         = CatapultPCIFilter-Service-AddReg
+
+;+
+; Registry values to add to the services key (HKLM\System\CCS\Services\CatapultPCIFilter\Parameters)
+;-
+
+[CatapultPCIFilter-Service-AddReg]
+HKR, Parameters, "Parent device compatible IDs", 0x00010000, "PCI\CC_060400", "PCI\CC_0604"
+HKR, Parameters, "Target device hardware IDs", 0x00010000, "PCI\VEN_1414&DEV_B100&SUBSYS_00000000&REV_01", "PCI\VEN_1414&DEV_B100", "PCI\VEN_1414&DEV_B101&SUBSYS_00000000&REV_01", "PCI\VEN_1414&DEV_B101", "PCI\VEN_1172&DEV_E001&SUBSYS_00000000&REV_01", "PCI\VEN_1172&DEV_E001"
+HKR, Parameters, "Number of Slots", 0x00010001, 0x00000040
+HKR, Parameters, "Bytes per Slot", 0x00010001, 0x00100000
+
+;+
+; Add entries to the "Hardware key" (HKLM\System\CCS\Enum\<Enumerator>\<Device ID>\<Instance ID>) in the registry
+;-
+
+[CatapultPCIFilter.NT.HW]
+Include = machine.inf
+Needs = PCI_DRV.HW
+AddReg = CatapultPCIFilter-HW-AddReg
+
+;+
+; This registry entry is what makes us get loaded as an upper filter
+;-
+
+[CatapultPCIFilter-HW-AddReg]
+HKR, , "UpperFilters", 0x00010000, "CatapultPCIFilter"
+
+;+
+; WDF Co-installer
+;-
+
+[CatapultPCIFilter.NT.CoInstallers]
+AddReg = CoInstaller-AddReg
+CopyFiles = CoInstaller-Files
+
+;+
+; Co-installer name
+;-
+
+[CoInstaller-AddReg]
+HKR,,CoInstallers32, 0x00010000, "WdfCoInstaller01011.dll,WdfCoInstaller"
+
+;+
+; WDF needs to know the name of our service
+;-
+
+[CatapultPCIFilter.NT.Wdf]
+KmdfService = CatapultPCIFilter, WDF-Sect
+
+;+
+; Version of WDF that we built against
+;-
+
+[WDF-Sect]
+KmdfLibraryVersion = 1.11
+
+;+
+; String substitution definitions
+;-
+
+[Strings]
+CatapultPCIFilter		= "Catapult upper-level PCIe root port class filter"
+DiskName				= "Catapult PCI Filter Installation Disk"
+MfgName					= "Microsoft"
+ServiceDesc				= "Catapult upper-level PCIe root port class filter driver"
+
+

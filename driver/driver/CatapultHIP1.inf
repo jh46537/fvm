@@ -1,0 +1,182 @@
+;+++
+;
+; Copyright © 2013 Microsoft, LLC. All rights reserved.
+;
+;---
+
+;++
+;
+; FACILITY:		Catapult  - XCG FPGA board
+;
+; DESCRIPTION:	This installation file will install the files necessary
+;				to support the Catapult device, including the WDF co-installer
+;
+;--
+
+;+
+; Identify this .INF file
+;-
+
+[Version]
+Signature="$WINDOWS NT$"
+Class=Catapult
+ClassGuid={7C5AF77B-F9A1-42F7-9271-4A17FB96DED3}
+Provider=%MfgName%
+DriverVer=08/21/2015,2.4.2070.0
+CatalogFile=CatapultHIP1.cat
+
+;+
+; This device is not a standard device, so create our own class
+;-
+
+[ClassInstall32]
+Addreg=CatapultHIP1-ClassReg     
+
+[CatapultHIP1-ClassReg]
+HKR,,,0,%ClassName%
+HKR,,Icon,,-5
+
+;+
+; Identify the installation media
+;-
+
+[SourceDisksNames]
+1 = %DiskName%,,
+
+;+
+; Identify the files on the installation media
+;-
+
+[SourceDisksFiles]
+CatapultHIP1.sys = 1
+WdfCoInstaller01011.dll=1
+
+;+
+; Identify where the files will be copied to
+;-
+
+[DestinationDirs]
+Driver-Files = 12
+CoInstaller-Files = 11
+
+;+
+; Files
+;-
+
+[Driver-Files]
+CatapultHIP1.sys
+
+[CoInstaller-Files]
+WdfCoInstaller01011.dll
+
+;+
+; This section prevents the user from being able to load the driver unless the hardware is present
+;-
+
+[ControlFlags]
+ExcludeFromSelect=*
+
+;+
+; The root of the hierarchy for this file
+;-
+
+[Manufacturer]
+%MfgName%=Microsoft,NTamd64
+
+[Microsoft.NTamd64]
+%Catapult% = CatapultHIP1, PCI\VEN_1414&DEV_B100&SUBSYS_00000000&REV_01
+%Catapult% = CatapultHIP1, PCI\VEN_1414&DEV_B100&SUBSYS_00000000
+%Catapult% = CatapultHIP1, PCI\VEN_1414&DEV_B100
+%Catapult% = CatapultHIP1, PCI\VEN_1172&DEV_E001&SUBSYS_00000000&REV_01
+%Catapult% = CatapultHIP1, PCI\VEN_1172&DEV_E001&SUBSYS_00000000
+%Catapult% = CatapultHIP1, PCI\VEN_1172&DEV_E001
+
+;+
+; Install the components
+;-
+
+[CatapultHIP1.NT]
+CopyFiles = Driver-Files
+
+;+
+; Add our service
+;-
+
+[CatapultHIP1.NT.Services]
+Addservice = CatapultHIP1, 0x00000002, Add-Service
+
+;+
+; Describe the service
+;-
+
+[Add-Service]
+DisplayName    = %ServiceDesc%
+ServiceType    = 1                  ; SERVICE_KERNEL_DRIVER
+StartType      = 3                  ; SERVICE_DEMAND_START
+ErrorControl   = 1                  ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\CatapultHIP1.sys
+AddReg         = CatapultHIP1-AddReg
+LoadOrderGroup = Extended Base
+
+;+
+; Registry values to add to the services key
+;-
+
+[CatapultHIP1-AddReg]
+
+;+
+; This section is called after the .Services section and points HKR to
+; HKLM\SYSTEM\CurrentControlSet\Enum\Enumerator\deviceID
+;-
+
+[CatapultHIP1.NT.HW]
+AddReg=CatapultHIP1-HWAddReg
+
+;+
+; Registry values to add to the HW key to enable Message Signaled Interrupts
+;-
+
+[CatapultHIP1-HWAddReg]
+HKR, "Interrupt Management", 0x00000010 
+HKR, "Interrupt Management\MessageSignaledInterruptProperties", 0x00000010
+HKR, "Interrupt Management\MessageSignaledInterruptProperties", MSISupported, 0x00010001, 1
+
+;+
+; WDF Co-installer
+;-
+
+[CatapultHIP1.NT.CoInstallers]
+AddReg = CoInstaller-AddReg
+CopyFiles = CoInstaller-Files
+
+;+
+; Co-installer name
+;-
+
+[CoInstaller-AddReg]
+HKR,,CoInstallers32,0x00010000, "WdfCoInstaller01011.dll,WdfCoInstaller"
+
+;+
+; WDF needs to know the name of our service
+;-
+
+[CatapultHIP1.NT.Wdf]
+KmdfService = CatapultHIP1, WDF-Sect
+
+;+
+; Version of WDF that we built against
+;-
+
+[WDF-Sect]
+KmdfLibraryVersion = 1.11
+
+;+
+; String substitution definitions
+;-
+
+[Strings]
+Catapult        = "Catapult FPGA device (HIP1)"
+ClassName       = "Catapult FPGA device"
+DiskName        = "Catapult Installation Disk"
+MfgName         = "Microsoft"
+ServiceDesc     = "Catapult KMDF driver (HIP1)"
