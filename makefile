@@ -1,11 +1,13 @@
 MSBUILD = C:\\Program\ Files\ \(x86\)\\MSBuild\\14.0\\Bin\\MSBuild.exe 
 VSPROJ = host/proj/fvm.vcxproj 
+QUARTUSSH = C:\\altera\\15.1\\quartus\\bin64\\quartus_sh.exe
+QPROJ = device/Project/Project.qpf
 
 
-.PHONY: all host clean clean_host run
+.PHONY: all host device device_build device_program clean clean_host clean_device run
 
 
-all: host
+all: host device
 
 
 host:
@@ -17,8 +19,21 @@ host:
 	    cp -r ../driver/bin/*.dll .
 
 
-clean: clean_host
+device: device_build device_program
+
+device_build:
+	$(QUARTUSSH) --flow compile $(QPROJ)
+
+device_program:
+	powershell "& ""device/genRpd.ps1 -inputSof device/Project/output_files/Project.sof -outputRpd build/fvm.rpd"""
+	powershell "& ""driver/bin/RSU.exe"""
+
+
+clean: clean_host clean_device
 	rm -rf build/
 
 clean_host:
 	rm -rf host/proj/x64
+
+clean_device:
+	rm -rf device/Project/output_files

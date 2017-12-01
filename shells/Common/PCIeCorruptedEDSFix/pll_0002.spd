@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<simPackage>
+ <file path="pll_0002_sim/pll_0002.vo" type="VERILOG" />
+ <topLevel name="pll_0002" />
+ <deviceFamily name="stratixv" />
+</simPackage>

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pinplan
+ variation_name="ddr3_dimm0"
+ megafunction_name="ALTERA_MEM_IF_DDR3_EMIF"
+ intended_family="Stratix V"
+ specifies="all_ports">
+ <global>
+  <pin name="pll_ref_clk" direction="input" scope="external" />
+  <pin name="global_reset_n" direction="input" scope="external" />
+  <pin name="soft_reset_n" direction="input" scope="external" />
+  <pin name="afi_clk" direction="output" scope="external" />
+  <pin name="afi_half_clk" direction="output" scope="external" />
+  <pin name="afi_reset_n" direction="output" scope="external" />
+  <pin name="afi_reset_export_n" direction="output" scope="external" />
+  <pin name="mem_a[14..0]" direction="output" scope="external" />
+  <pin name="mem_ba[2..0]" direction="output" scope="external" />
+  <pin name="mem_ck[1..0]" direction="output" scope="external" />
+  <pin name="mem_ck_n[1..0]" direction="output" scope="external" />
+  <pin name="mem_cke[1..0]" direction="output" scope="external" />
+  <pin name="mem_cs_n[1..0]" direction="output" scope="external" />
+  <pin name="mem_dm[8..0]" direction="output" scope="external" />
+  <pin name="mem_ras_n" direction="output" scope="external" />
+  <pin name="mem_cas_n" direction="output" scope="external" />
+  <pin name="mem_we_n" direction="output" scope="external" />
+  <pin name="mem_reset_n" direction="output" scope="external" />
+  <pin name="mem_dq[71..0]" direction="bidir" scope="external" />
+  <pin name="mem_dqs[8..0]" direction="bidir" scope="external" />
+  <pin name="mem_dqs_n[8..0]" direction="bidir" scope="external" />
+  <pin name="mem_odt[1..0]" direction="output" scope="external" />
+  <pin name="avl_ready" direction="output" scope="external" />
+  <pin name="avl_burstbegin" direction="input" scope="external" />
+  <pin name="avl_addr[25..0]" direction="input" scope="external" />
+  <pin name="avl_rdata_valid" direction="output" scope="external" />
+  <pin name="avl_rdata[575..0]" direction="output" scope="external" />
+  <pin name="avl_wdata[575..0]" direction="input" scope="external" />
+  <pin name="avl_be[71..0]" direction="input" scope="external" />
+  <pin name="avl_read_req" direction="input" scope="external" />
+  <pin name="avl_write_req" direction="input" scope="external" />
+  <pin name="avl_size[6..0]" direction="input" scope="external" />
+  <pin name="local_init_done" direction="output" scope="external" />
+  <pin name="local_cal_success" direction="output" scope="external" />
+  <pin name="local_cal_fail" direction="output" scope="external" />
+  <pin name="oct_rzqin" direction="input" scope="external" />
+  <pin
+     name="seriesterminationcontrol[15..0]"
+     direction="output"
+     scope="external" />
+  <pin
+     name="parallelterminationcontrol[15..0]"
+     direction="output"
+     scope="external" />
+  <pin name="pll_mem_clk" direction="output" scope="external" />
+  <pin name="pll_write_clk" direction="output" scope="external" />
+  <pin name="pll_locked" direction="output" scope="external" />
+  <pin name="pll_write_clk_pre_phy_clk" direction="output" scope="external" />
+  <pin name="pll_addr_cmd_clk" direction="output" scope="external" />
+  <pin name="pll_avl_clk" direction="output" scope="external" />
+  <pin name="pll_config_clk" direction="output" scope="external" />
+  <pin name="pll_hr_clk" direction="output" scope="external" />
+  <pin name="pll_p2c_read_clk" direction="output" scope="external" />
+  <pin name="pll_c2p_write_clk" direction="output" scope="external" />
+  <pin name="dll_pll_locked" direction="input" scope="external" />
+  <pin name="dll_delayctrl[6..0]" direction="output" scope="external" />
+  <pin name="seq_debug_addr[19..0]" direction="input" scope="external" />
+  <pin name="seq_debug_read_req" direction="input" scope="external" />
+  <pin name="seq_debug_rdata[31..0]" direction="output" scope="external" />
+  <pin name="seq_debug_write_req" direction="input" scope="external" />
+  <pin name="seq_debug_wdata[31..0]" direction="input" scope="external" />
+  <pin name="seq_debug_waitrequest" direction="output" scope="external" />
+  <pin name="seq_debug_be[3..0]" direction="input" scope="external" />
+  <pin name="seq_debug_rdata_valid" direction="output" scope="external" />
+ </global>
+</pinplan>

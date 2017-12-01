@@ -1,0 +1,34 @@
+# # File gsaved with Nlview version 6.3.8  2013-12-19 bk=1.2992 VDI=34 GEI=35
+# 
+preplace inst pcie3_rcd.DUT -pg 1 -lvl 3 -y 220
+preplace inst pcie3_rcd.clk_0 -pg 1 -lvl 1 -y 120
+preplace inst pcie3_rcd.pcie_reconfig_driver_0 -pg 1 -lvl 2 -y 60
+preplace inst pcie3_rcd -pg 1 -lvl 1 -y 40 -regy -20
+preplace inst pcie3_rcd.alt_xcvr_reconfig_0 -pg 1 -lvl 3 -y 40
+preplace netloc EXPORT<net_container>pcie3_rcd</net_container>(SLAVE)pcie3_rcd.pcie_reconfig_driver_hip_status,(SLAVE)pcie_reconfig_driver_0.hip_status_drv) 1 0 2 NJ 90 NJ
+preplace netloc FAN_OUT<net_container>pcie3_rcd</net_container>(SLAVE)alt_xcvr_reconfig_0.mgmt_clk_clk,(MASTER)clk_0.clk,(SLAVE)pcie_reconfig_driver_0.reconfig_xcvr_clk) 1 1 2 430 50 N
+preplace netloc FAN_OUT<net_container>pcie3_rcd</net_container>(SLAVE)DUT.pld_clk,(MASTER)DUT.coreclkout_hip,(SLAVE)pcie_reconfig_driver_0.pld_clk) 1 1 3 470 430 730 210 960
+preplace netloc FAN_OUT<net_container>pcie3_rcd</net_container>(SLAVE)pcie_reconfig_driver_0.reconfig_xcvr_rst,(SLAVE)alt_xcvr_reconfig_0.mgmt_rst_reset,(MASTER)clk_0.clk_reset) 1 1 2 410 30 690
+preplace netloc EXPORT<net_container>pcie3_rcd</net_container>(MASTER)pcie3_rcd.dut_rx_st,(MASTER)DUT.rx_st) 1 3 1 N
+preplace netloc POINT_TO_POINT<net_container>pcie3_rcd</net_container>(SLAVE)DUT.reconfig_from_xcvr,(SLAVE)alt_xcvr_reconfig_0.reconfig_from_xcvr) 1 2 1 750
+preplace netloc POINT_TO_POINT<net_container>pcie3_rcd</net_container>(SLAVE)DUT.reconfig_to_xcvr,(SLAVE)alt_xcvr_reconfig_0.reconfig_to_xcvr) 1 2 1 770
+preplace netloc EXPORT<net_container>pcie3_rcd</net_container>(SLAVE)DUT.hip_pipe,(SLAVE)pcie3_rcd.hip_pipe) 1 0 3 NJ 290 NJ 290 NJ
+preplace netloc EXPORT<net_container>pcie3_rcd</net_container>(SLAVE)pcie3_rcd.dut_hip_rst,(SLAVE)DUT.hip_rst) 1 0 3 NJ 310 NJ 310 NJ
+preplace netloc EXPORT<net_container>pcie3_rcd</net_container>(SLAVE)pcie3_rcd.dut_power_mngt,(SLAVE)DUT.power_mngt) 1 0 3 NJ 450 NJ 450 NJ
+preplace netloc EXPORT<net_container>pcie3_rcd</net_container>(SLAVE)DUT.int_msi,(SLAVE)pcie3_rcd.dut_int_msi) 1 0 3 NJ 370 NJ 370 NJ
+preplace netloc EXPORT<net_container>pcie3_rcd</net_container>(SLAVE)pcie3_rcd.dut_tx_cred,(SLAVE)DUT.tx_cred) 1 0 3 NJ 550 NJ 550 NJ
+preplace netloc EXPORT<net_container>pcie3_rcd</net_container>(SLAVE)DUT.tx_st,(SLAVE)pcie3_rcd.dut_tx_st) 1 0 3 NJ 570 NJ 570 NJ
+preplace netloc EXPORT<net_container>pcie3_rcd</net_container>(SLAVE)DUT.refclk,(SLAVE)pcie3_rcd.refclk) 1 0 3 NJ 510 NJ 510 NJ
+preplace netloc EXPORT<net_container>pcie3_rcd</net_container>(SLAVE)pcie3_rcd.dut_hip_status,(SLAVE)DUT.hip_status) 1 0 3 NJ 350 NJ 350 NJ
+preplace netloc EXPORT<net_container>pcie3_rcd</net_container>(SLAVE)clk_0.clk_in,(SLAVE)pcie3_rcd.clk) 1 0 1 NJ
+preplace netloc EXPORT<net_container>pcie3_rcd</net_container>(SLAVE)pcie3_rcd.dut_config_tl,(SLAVE)DUT.config_tl) 1 0 3 NJ 230 NJ 230 NJ
+preplace netloc EXPORT<net_container>pcie3_rcd</net_container>(SLAVE)DUT.rx_bar_be,(SLAVE)pcie3_rcd.dut_rx_bar_be) 1 0 3 NJ 530 NJ 530 NJ
+preplace netloc EXPORT<net_container>pcie3_rcd</net_container>(SLAVE)DUT.hip_ctrl,(SLAVE)pcie3_rcd.hip_ctrl) 1 0 3 NJ 250 NJ 250 NJ
+preplace netloc POINT_TO_POINT<net_container>pcie3_rcd</net_container>(SLAVE)pcie_reconfig_driver_0.hip_currentspeed,(SLAVE)DUT.hip_currentspeed) 1 1 2 450 270 NJ
+preplace netloc POINT_TO_POINT<net_container>pcie3_rcd</net_container>(SLAVE)pcie_reconfig_driver_0.reconfig_busy,(SLAVE)alt_xcvr_reconfig_0.reconfig_busy) 1 1 2 490 210 710
+preplace netloc EXPORT<net_container>pcie3_rcd</net_container>(SLAVE)pcie3_rcd.reset,(SLAVE)clk_0.clk_in_reset) 1 0 1 NJ
+preplace netloc EXPORT<net_container>pcie3_rcd</net_container>(SLAVE)pcie3_rcd.pcie_rstn,(SLAVE)DUT.npor) 1 0 3 NJ 410 NJ 410 NJ
+preplace netloc EXPORT<net_container>pcie3_rcd</net_container>(SLAVE)DUT.hip_serial,(SLAVE)pcie3_rcd.hip_serial) 1 0 3 NJ 330 NJ 330 NJ
+preplace netloc POINT_TO_POINT<net_container>pcie3_rcd</net_container>(SLAVE)alt_xcvr_reconfig_0.reconfig_mgmt,(MASTER)pcie_reconfig_driver_0.reconfig_mgmt) 1 2 1 690
+levelinfo -pg 1 0 200 1070
+levelinfo -hier pcie3_rcd 210 240 520 800 980

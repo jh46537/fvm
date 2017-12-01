@@ -1,0 +1,512 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<system name="$${FILENAME}">
+ <component
+   name="$${FILENAME}"
+   displayName="$${FILENAME}"
+   version="1.0"
+   description=""
+   tags=""
+   categories="" />
+ <parameter name="bonusData"><![CDATA[bonusData 
+{
+   element DUT_pcie_tb
+   {
+      datum _sortIndex
+      {
+         value = "13";
+         type = "int";
+      }
+   }
+   element pcie3_ttk_rcd_inst
+   {
+      datum _sortIndex
+      {
+         value = "0";
+         type = "int";
+      }
+   }
+   element pcie3_ttk_rcd_inst_clk_bfm
+   {
+      datum _sortIndex
+      {
+         value = "1";
+         type = "int";
+      }
+   }
+   element pcie3_ttk_rcd_inst_dut_config_tl_bfm
+   {
+      datum _sortIndex
+      {
+         value = "3";
+         type = "int";
+      }
+   }
+   element pcie3_ttk_rcd_inst_dut_hip_rst_bfm
+   {
+      datum _sortIndex
+      {
+         value = "4";
+         type = "int";
+      }
+   }
+   element pcie3_ttk_rcd_inst_dut_hip_status_bfm
+   {
+      datum _sortIndex
+      {
+         value = "5";
+         type = "int";
+      }
+   }
+   element pcie3_ttk_rcd_inst_dut_int_msi_bfm
+   {
+      datum _sortIndex
+      {
+         value = "6";
+         type = "int";
+      }
+   }
+   element pcie3_ttk_rcd_inst_dut_power_mngt_bfm
+   {
+      datum _sortIndex
+      {
+         value = "7";
+         type = "int";
+      }
+   }
+   element pcie3_ttk_rcd_inst_dut_rx_bar_be_bfm
+   {
+      datum _sortIndex
+      {
+         value = "8";
+         type = "int";
+      }
+   }
+   element pcie3_ttk_rcd_inst_dut_rx_st_bfm
+   {
+      datum _sortIndex
+      {
+         value = "9";
+         type = "int";
+      }
+   }
+   element pcie3_ttk_rcd_inst_dut_tx_cred_bfm
+   {
+      datum _sortIndex
+      {
+         value = "10";
+         type = "int";
+      }
+   }
+   element pcie3_ttk_rcd_inst_dut_tx_st_bfm
+   {
+      datum _sortIndex
+      {
+         value = "11";
+         type = "int";
+      }
+   }
+   element pcie3_ttk_rcd_inst_pcie_reconfig_driver_hip_status_bfm
+   {
+      datum _sortIndex
+      {
+         value = "12";
+         type = "int";
+      }
+   }
+   element pcie3_ttk_rcd_inst_reset_bfm
+   {
+      datum _sortIndex
+      {
+         value = "2";
+         type = "int";
+      }
+   }
+}
+]]></parameter>
+ <parameter name="clockCrossingAdapter" value="HANDSHAKE" />
+ <parameter name="device" value="5SGSMD5K2F40I3L" />
+ <parameter name="deviceFamily" value="Stratix V" />
+ <parameter name="deviceSpeedGrade" value="3_H2" />
+ <parameter name="fabricMode" value="QSYS" />
+ <parameter name="generateLegacySim" value="false" />
+ <parameter name="generationId" value="0" />
+ <parameter name="globalResetBus" value="false" />
+ <parameter name="hdlLanguage" value="VERILOG" />
+ <parameter name="hideFromIPCatalog" value="false" />
+ <parameter name="lockedInterfaceDefinition" value="" />
+ <parameter name="maxAdditionalLatency" value="1" />
+ <parameter name="projectName" value="" />
+ <parameter name="sopcBorderPoints" value="false" />
+ <parameter name="systemHash" value="0" />
+ <parameter name="testBenchDutName" value="pcie3_ttk_rcd" />
+ <parameter name="timeStamp" value="0" />
+ <parameter name="useTestBenchNamingPattern" value="true" />
+ <instanceScript></instanceScript>
+ <module name="DUT_pcie_tb" kind="altera_pcie_tbed" version="15.1" enabled="1">
+  <parameter name="apps_type_hwtcl" value="1" />
+  <parameter name="deemphasis_enable_hwtcl" value="false" />
+  <parameter name="ecrc_check_capable_hwtcl" value="0" />
+  <parameter name="ecrc_gen_capable_hwtcl" value="0" />
+  <parameter name="enable_pipe32_phyip_ser_driver_hwtcl" value="0" />
+  <parameter name="enable_pipe32_sim_hwtcl" value="1" />
+  <parameter name="enable_tl_only_sim_hwtcl" value="0" />
+  <parameter name="gen123_lane_rate_mode_hwtcl" value="Gen3 (8.0 Gbps)" />
+  <parameter name="lane_mask_hwtcl" value="x8" />
+  <parameter name="millisecond_cycle_count_hwtcl" value="248500" />
+  <parameter name="pld_clk_MHz" value="2500" />
+  <parameter name="pll_refclk_freq_hwtcl" value="100 MHz" />
+  <parameter name="port_type_hwtcl" value="Native endpoint" />
+  <parameter name="serial_sim_hwtcl" value="1" />
+  <parameter name="use_crc_forwarding_hwtcl" value="0" />
+  <parameter name="use_stratixv_tb_device" value="false" />
+ </module>
+ <module
+   name="pcie3_ttk_rcd_inst"
+   kind="pcie3_ttk_rcd"
+   version="1.0"
+   enabled="1">
+  <parameter name="AUTO_CLK_CLOCK_DOMAIN" value="2" />
+  <parameter name="AUTO_CLK_CLOCK_RATE" value="0" />
+  <parameter name="AUTO_CLK_RESET_DOMAIN" value="2" />
+  <parameter name="AUTO_DEVICE" value="5SGSMD5K2F40I3L" />
+  <parameter name="AUTO_DEVICE_FAMILY" value="Stratix V" />
+  <parameter name="AUTO_DEVICE_SPEEDGRADE" value="3_H2" />
+  <parameter name="AUTO_GENERATION_ID" value="0" />
+  <parameter name="AUTO_REFCLK_CLOCK_DOMAIN" value="1" />
+  <parameter name="AUTO_REFCLK_CLOCK_RATE" value="100000000" />
+  <parameter name="AUTO_REFCLK_RESET_DOMAIN" value="1" />
+  <parameter name="AUTO_UNIQUE_ID" value="pcie3_ttk_rcd" />
+ </module>
+ <module
+   name="pcie3_ttk_rcd_inst_clk_bfm"
+   kind="altera_avalon_clock_source"
+   version="15.1"
+   enabled="1">
+  <parameter name="CLOCK_RATE" value="50000000" />
+  <parameter name="CLOCK_UNIT" value="1" />
+ </module>
+ <module
+   name="pcie3_ttk_rcd_inst_dut_config_tl_bfm"
+   kind="altera_conduit_bfm"
+   version="15.1"
+   enabled="1">
+  <parameter name="CLOCKED_SIGNAL" value="false" />
+  <parameter name="ENABLE_RESET" value="false" />
+  <parameter name="SIGNAL_DIRECTIONS">output,input,input,input,output,output</parameter>
+  <parameter name="SIGNAL_ROLES">hpg_ctrler,tl_cfg_add,tl_cfg_ctl,tl_cfg_sts,cpl_err,cpl_pending</parameter>
+  <parameter name="SIGNAL_WIDTHS" value="5,4,32,53,7,1" />
+ </module>
+ <module
+   name="pcie3_ttk_rcd_inst_dut_hip_rst_bfm"
+   kind="altera_conduit_bfm"
+   version="15.1"
+   enabled="1">
+  <parameter name="CLOCKED_SIGNAL" value="false" />
+  <parameter name="ENABLE_RESET" value="false" />
+  <parameter name="SIGNAL_DIRECTIONS">input,input,input,output,input</parameter>
+  <parameter name="SIGNAL_ROLES">reset_status,serdes_pll_locked,pld_clk_inuse,pld_core_ready,testin_zero</parameter>
+  <parameter name="SIGNAL_WIDTHS" value="1,1,1,1,1" />
+ </module>
+ <module
+   name="pcie3_ttk_rcd_inst_dut_hip_status_bfm"
+   kind="altera_conduit_bfm"
+   version="15.1"
+   enabled="1">
+  <parameter name="CLOCKED_SIGNAL" value="false" />
+  <parameter name="ENABLE_RESET" value="false" />
+  <parameter name="SIGNAL_DIRECTIONS">input,input,input,input,input,input,input,input,input,input,input,input,input,input,input,input,input</parameter>
+  <parameter name="SIGNAL_ROLES">derr_cor_ext_rcv,derr_cor_ext_rpl,derr_rpl,dlup,dlup_exit,ev128ns,ev1us,hotrst_exit,int_status,l2_exit,lane_act,ltssmstate,rx_par_err,tx_par_err,cfg_par_err,ko_cpl_spc_header,ko_cpl_spc_data</parameter>
+  <parameter name="SIGNAL_WIDTHS">1,1,1,1,1,1,1,1,4,1,4,5,1,2,1,8,12</parameter>
+ </module>
+ <module
+   name="pcie3_ttk_rcd_inst_dut_int_msi_bfm"
+   kind="altera_conduit_bfm"
+   version="15.1"
+   enabled="1">
+  <parameter name="CLOCKED_SIGNAL" value="false" />
+  <parameter name="ENABLE_RESET" value="false" />
+  <parameter name="SIGNAL_DIRECTIONS">output,output,output,output,input,input</parameter>
+  <parameter name="SIGNAL_ROLES">app_int_sts,app_msi_num,app_msi_req,app_msi_tc,app_int_ack,app_msi_ack</parameter>
+  <parameter name="SIGNAL_WIDTHS" value="1,5,1,3,1,1" />
+ </module>
+ <module
+   name="pcie3_ttk_rcd_inst_dut_power_mngt_bfm"
+   kind="altera_conduit_bfm"
+   version="15.1"
+   enabled="1">
+  <parameter name="CLOCKED_SIGNAL" value="false" />
+  <parameter name="ENABLE_RESET" value="false" />
+  <parameter name="SIGNAL_DIRECTIONS">output,output,output,output,input</parameter>
+  <parameter name="SIGNAL_ROLES">pm_auxpwr,pm_data,pme_to_cr,pm_event,pme_to_sr</parameter>
+  <parameter name="SIGNAL_WIDTHS" value="1,10,1,1,1" />
+ </module>
+ <module
+   name="pcie3_ttk_rcd_inst_dut_rx_bar_be_bfm"
+   kind="altera_conduit_bfm"
+   version="15.1"
+   enabled="1">
+  <parameter name="CLOCKED_SIGNAL" value="false" />
+  <parameter name="ENABLE_RESET" value="false" />
+  <parameter name="SIGNAL_DIRECTIONS" value="input,input,output" />
+  <parameter name="SIGNAL_ROLES">rx_st_bar,rx_st_be,rx_st_mask</parameter>
+  <parameter name="SIGNAL_WIDTHS" value="8,32,1" />
+ </module>
+ <module
+   name="pcie3_ttk_rcd_inst_dut_rx_st_bfm"
+   kind="altera_avalon_st_sink_bfm"
+   version="15.1"
+   enabled="1">
+  <parameter name="ST_BEATSPERCYCLE" value="1" />
+  <parameter name="ST_CHANNEL_W" value="1" />
+  <parameter name="ST_ERROR_DESCRIPTOR" value="" />
+  <parameter name="ST_ERROR_W" value="1" />
+  <parameter name="ST_MAX_CHANNELS" value="0" />
+  <parameter name="ST_NUMSYMBOLS" value="1" />
+  <parameter name="ST_READY_LATENCY" value="3" />
+  <parameter name="ST_SYMBOL_W" value="256" />
+  <parameter name="USE_CHANNEL" value="0" />
+  <parameter name="USE_EMPTY" value="1" />
+  <parameter name="USE_ERROR" value="1" />
+  <parameter name="USE_PACKET" value="1" />
+  <parameter name="USE_READY" value="1" />
+  <parameter name="USE_VALID" value="1" />
+  <parameter name="VHDL_ID" value="0" />
+ </module>
+ <module
+   name="pcie3_ttk_rcd_inst_dut_tx_cred_bfm"
+   kind="altera_conduit_bfm"
+   version="15.1"
+   enabled="1">
+  <parameter name="CLOCKED_SIGNAL" value="false" />
+  <parameter name="ENABLE_RESET" value="false" />
+  <parameter name="SIGNAL_DIRECTIONS">input,input,input,input,input,input,input,input</parameter>
+  <parameter name="SIGNAL_ROLES">tx_cred_datafccp,tx_cred_datafcnp,tx_cred_datafcp,tx_cred_fchipcons,tx_cred_fcinfinite,tx_cred_hdrfccp,tx_cred_hdrfcnp,tx_cred_hdrfcp</parameter>
+  <parameter name="SIGNAL_WIDTHS" value="12,12,12,6,6,8,8,8" />
+ </module>
+ <module
+   name="pcie3_ttk_rcd_inst_dut_tx_st_bfm"
+   kind="altera_avalon_st_source_bfm"
+   version="15.1"
+   enabled="1">
+  <parameter name="ST_BEATSPERCYCLE" value="1" />
+  <parameter name="ST_CHANNEL_W" value="1" />
+  <parameter name="ST_ERROR_DESCRIPTOR" value="" />
+  <parameter name="ST_ERROR_W" value="1" />
+  <parameter name="ST_MAX_CHANNELS" value="0" />
+  <parameter name="ST_NUMSYMBOLS" value="1" />
+  <parameter name="ST_READY_LATENCY" value="3" />
+  <parameter name="ST_SYMBOL_W" value="256" />
+  <parameter name="USE_CHANNEL" value="0" />
+  <parameter name="USE_EMPTY" value="1" />
+  <parameter name="USE_ERROR" value="1" />
+  <parameter name="USE_PACKET" value="1" />
+  <parameter name="USE_READY" value="1" />
+  <parameter name="USE_VALID" value="1" />
+  <parameter name="VHDL_ID" value="0" />
+ </module>
+ <module
+   name="pcie3_ttk_rcd_inst_pcie_reconfig_driver_hip_status_bfm"
+   kind="altera_conduit_bfm"
+   version="15.1"
+   enabled="1">
+  <parameter name="CLOCKED_SIGNAL" value="false" />
+  <parameter name="ENABLE_RESET" value="false" />
+  <parameter name="SIGNAL_DIRECTIONS">output,output,output,output,output,output,output,output,output,output,output,output,output,output,output,output,output</parameter>
+  <parameter name="SIGNAL_ROLES">derr_cor_ext_rcv,derr_cor_ext_rpl,derr_rpl,dlup_exit,ev128ns,ev1us,hotrst_exit,int_status,l2_exit,lane_act,ltssmstate,dlup,rx_par_err,tx_par_err,cfg_par_err,ko_cpl_spc_header,ko_cpl_spc_data</parameter>
+  <parameter name="SIGNAL_WIDTHS">1,1,1,1,1,1,1,4,1,4,5,1,1,2,1,8,12</parameter>
+ </module>
+ <module
+   name="pcie3_ttk_rcd_inst_reset_bfm"
+   kind="altera_avalon_reset_source"
+   version="15.1"
+   enabled="1">
+  <parameter name="ASSERT_HIGH_RESET" value="0" />
+  <parameter name="INITIAL_RESET_CYCLES" value="50" />
+ </module>
+ <connection
+   kind="avalon_streaming"
+   version="15.1"
+   start="pcie3_ttk_rcd_inst.dut_rx_st"
+   end="pcie3_ttk_rcd_inst_dut_rx_st_bfm.sink" />
+ <connection
+   kind="avalon_streaming"
+   version="15.1"
+   start="pcie3_ttk_rcd_inst_dut_tx_st_bfm.src"
+   end="pcie3_ttk_rcd_inst.dut_tx_st" />
+ <connection
+   kind="clock"
+   version="15.1"
+   start="pcie3_ttk_rcd_inst_clk_bfm.clk"
+   end="pcie3_ttk_rcd_inst.clk" />
+ <connection
+   kind="clock"
+   version="15.1"
+   start="pcie3_ttk_rcd_inst_clk_bfm.clk"
+   end="pcie3_ttk_rcd_inst_reset_bfm.clk" />
+ <connection
+   kind="clock"
+   version="15.1"
+   start="pcie3_ttk_rcd_inst_clk_bfm.clk"
+   end="pcie3_ttk_rcd_inst_dut_rx_st_bfm.clk" />
+ <connection
+   kind="clock"
+   version="15.1"
+   start="pcie3_ttk_rcd_inst_clk_bfm.clk"
+   end="pcie3_ttk_rcd_inst_dut_tx_st_bfm.clk" />
+ <connection
+   kind="clock"
+   version="15.1"
+   start="DUT_pcie_tb.refclk"
+   end="pcie3_ttk_rcd_inst.refclk" />
+ <connection
+   kind="conduit"
+   version="15.1"
+   start="pcie3_ttk_rcd_inst_dut_config_tl_bfm.conduit"
+   end="pcie3_ttk_rcd_inst.dut_config_tl">
+  <parameter name="endPort" value="" />
+  <parameter name="endPortLSB" value="0" />
+  <parameter name="startPort" value="" />
+  <parameter name="startPortLSB" value="0" />
+  <parameter name="width" value="0" />
+ </connection>
+ <connection
+   kind="conduit"
+   version="15.1"
+   start="pcie3_ttk_rcd_inst_dut_hip_rst_bfm.conduit"
+   end="pcie3_ttk_rcd_inst.dut_hip_rst">
+  <parameter name="endPort" value="" />
+  <parameter name="endPortLSB" value="0" />
+  <parameter name="startPort" value="" />
+  <parameter name="startPortLSB" value="0" />
+  <parameter name="width" value="0" />
+ </connection>
+ <connection
+   kind="conduit"
+   version="15.1"
+   start="pcie3_ttk_rcd_inst_dut_hip_status_bfm.conduit"
+   end="pcie3_ttk_rcd_inst.dut_hip_status">
+  <parameter name="endPort" value="" />
+  <parameter name="endPortLSB" value="0" />
+  <parameter name="startPort" value="" />
+  <parameter name="startPortLSB" value="0" />
+  <parameter name="width" value="0" />
+ </connection>
+ <connection
+   kind="conduit"
+   version="15.1"
+   start="pcie3_ttk_rcd_inst_dut_int_msi_bfm.conduit"
+   end="pcie3_ttk_rcd_inst.dut_int_msi">
+  <parameter name="endPort" value="" />
+  <parameter name="endPortLSB" value="0" />
+  <parameter name="startPort" value="" />
+  <parameter name="startPortLSB" value="0" />
+  <parameter name="width" value="0" />
+ </connection>
+ <connection
+   kind="conduit"
+   version="15.1"
+   start="pcie3_ttk_rcd_inst_dut_power_mngt_bfm.conduit"
+   end="pcie3_ttk_rcd_inst.dut_power_mngt">
+  <parameter name="endPort" value="" />
+  <parameter name="endPortLSB" value="0" />
+  <parameter name="startPort" value="" />
+  <parameter name="startPortLSB" value="0" />
+  <parameter name="width" value="0" />
+ </connection>
+ <connection
+   kind="conduit"
+   version="15.1"
+   start="pcie3_ttk_rcd_inst_dut_rx_bar_be_bfm.conduit"
+   end="pcie3_ttk_rcd_inst.dut_rx_bar_be">
+  <parameter name="endPort" value="" />
+  <parameter name="endPortLSB" value="0" />
+  <parameter name="startPort" value="" />
+  <parameter name="startPortLSB" value="0" />
+  <parameter name="width" value="0" />
+ </connection>
+ <connection
+   kind="conduit"
+   version="15.1"
+   start="pcie3_ttk_rcd_inst_dut_tx_cred_bfm.conduit"
+   end="pcie3_ttk_rcd_inst.dut_tx_cred">
+  <parameter name="endPort" value="" />
+  <parameter name="endPortLSB" value="0" />
+  <parameter name="startPort" value="" />
+  <parameter name="startPortLSB" value="0" />
+  <parameter name="width" value="0" />
+ </connection>
+ <connection
+   kind="conduit"
+   version="15.1"
+   start="pcie3_ttk_rcd_inst_pcie_reconfig_driver_hip_status_bfm.conduit"
+   end="pcie3_ttk_rcd_inst.pcie_reconfig_driver_hip_status">
+  <parameter name="endPort" value="" />
+  <parameter name="endPortLSB" value="0" />
+  <parameter name="startPort" value="" />
+  <parameter name="startPortLSB" value="0" />
+  <parameter name="width" value="0" />
+ </connection>
+ <connection
+   kind="conduit"
+   version="15.1"
+   start="DUT_pcie_tb.hip_ctrl"
+   end="pcie3_ttk_rcd_inst.hip_ctrl">
+  <parameter name="endPort" value="" />
+  <parameter name="endPortLSB" value="0" />
+  <parameter name="startPort" value="" />
+  <parameter name="startPortLSB" value="0" />
+  <parameter name="width" value="0" />
+ </connection>
+ <connection
+   kind="conduit"
+   version="15.1"
+   start="DUT_pcie_tb.hip_pipe"
+   end="pcie3_ttk_rcd_inst.hip_pipe">
+  <parameter name="endPort" value="" />
+  <parameter name="endPortLSB" value="0" />
+  <parameter name="startPort" value="" />
+  <parameter name="startPortLSB" value="0" />
+  <parameter name="width" value="0" />
+ </connection>
+ <connection
+   kind="conduit"
+   version="15.1"
+   start="DUT_pcie_tb.hip_serial"
+   end="pcie3_ttk_rcd_inst.hip_serial">
+  <parameter name="endPort" value="" />
+  <parameter name="endPortLSB" value="0" />
+  <parameter name="startPort" value="" />
+  <parameter name="startPortLSB" value="0" />
+  <parameter name="width" value="0" />
+ </connection>
+ <connection
+   kind="conduit"
+   version="15.1"
+   start="DUT_pcie_tb.npor"
+   end="pcie3_ttk_rcd_inst.pcie_rstn">
+  <parameter name="endPort" value="" />
+  <parameter name="endPortLSB" value="0" />
+  <parameter name="startPort" value="" />
+  <parameter name="startPortLSB" value="0" />
+  <parameter name="width" value="0" />
+ </connection>
+ <connection
+   kind="reset"
+   version="15.1"
+   start="pcie3_ttk_rcd_inst_reset_bfm.reset"
+   end="pcie3_ttk_rcd_inst_dut_rx_st_bfm.clk_reset" />
+ <connection
+   kind="reset"
+   version="15.1"
+   start="pcie3_ttk_rcd_inst_reset_bfm.reset"
+   end="pcie3_ttk_rcd_inst_dut_tx_st_bfm.clk_reset" />
+ <connection
+   kind="reset"
+   version="15.1"
+   start="pcie3_ttk_rcd_inst_reset_bfm.reset"
+   end="pcie3_ttk_rcd_inst.reset" />
+ <interconnectRequirement for="$system" name="qsys_mm.clockCrossingAdapter" value="HANDSHAKE" />
+ <interconnectRequirement for="$system" name="qsys_mm.enableEccProtection" value="FALSE" />
+ <interconnectRequirement for="$system" name="qsys_mm.insertDefaultSlave" value="FALSE" />
+ <interconnectRequirement for="$system" name="qsys_mm.maxAdditionalLatency" value="1" />
+</system>

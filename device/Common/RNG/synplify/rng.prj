@@ -1,0 +1,122 @@
+#--  Synopsys, Inc.
+#--  Version J-2015.03-1
+#--  Project file C:\Users\krahimi\Source\Workspaces\Data Center Futures\FastRanking\Altera\Catapult\Hardware\Common\RNG\synplify\rng.prj
+
+#project files
+add_file -verilog "../rtl/rng.v"
+add_file -verilog "../rtl/rng_chi_sq_lut.v"
+add_file -verilog "../rtl/rng_core.v"
+add_file -verilog "../rtl/rng_fifo.v"
+add_file -verilog "../rtl/rng_rbg.v"
+add_file -verilog "../rtl/rng_regs.v"
+add_file -verilog "../../AESX/rtl/aes.vh"
+add_file -verilog "../../AESX/rtl/trivium_defines.vh"
+add_file -verilog "../../AESX/rtl/aes_gf8_mul.v"
+add_file -verilog "../../AESX/rtl/aes_mtech_xor2.v"
+add_file -verilog "../../AESX/rtl/aes_mtech_xnor2.v"
+add_file -verilog "../../AESX/rtl/aes_mtech_nand2.v"
+add_file -verilog "../../AESX/rtl/aes_gf1_and.v"
+add_file -verilog "../../AESX/rtl/aes_gf2_add.v"
+add_file -verilog "../../AESX/rtl/aes_gf2_inv.v"
+add_file -verilog "../../AESX/rtl/aes_gf2_mulc.v"
+add_file -verilog "../../AESX/rtl/aes_gf2_mul.v"
+add_file -verilog "../../AESX/rtl/aes_gf2_squ.v"
+add_file -verilog "../../AESX/rtl/aes_gf4_add.v"
+add_file -verilog "../../AESX/rtl/aes_gf4_inv.v"
+add_file -verilog "../../AESX/rtl/aes_gf4_mulc.v"
+add_file -verilog "../../AESX/rtl/aes_gf4_mul.v"
+add_file -verilog "../../AESX/rtl/aes_gf4_squ.v"
+add_file -verilog "../../AESX/rtl/aes_gf8_inv.v"
+add_file -verilog "../../AESX/rtl/aes_affine_mul.v"
+add_file -verilog "../../AESX/rtl/aes_basic_affine_mul_mi.v"
+add_file -verilog "../../AESX/rtl/aes_basic_affine_mul_m.v"
+add_file -verilog "../../AESX/rtl/aes_affine_mul_t.v"
+add_file -verilog "../../AESX/rtl/aes_affine_mul_ti.v"
+add_file -verilog "../../AESX/rtl/aes_affine_mul_m.v"
+add_file -verilog "../../AESX/rtl/aes_affine_mul_mi.v"
+add_file -verilog "../../AESX/rtl/aes_sbox_lut.v"
+add_file -verilog "../../AESX/rtl/aes_subbytes.v"
+add_file -verilog "../../AESX/rtl/aes_basic_shiftrows.v"
+add_file -verilog "../../AESX/rtl/aes_shiftrows.v"
+add_file -verilog "../../AESX/rtl/aes_addroundkey.v"
+add_file -verilog "../../AESX/rtl/aes_basic_mixcolumns.v"
+add_file -verilog "../../AESX/rtl/aes_mixcolumns.v"
+add_file -verilog "../../AESX/rtl/aes_round.v"
+add_file -verilog "../../AESX/rtl/aes_datapath.v"
+add_file -verilog "../../AESX/rtl/aes_rotword.v"
+add_file -verilog "../../AESX/rtl/aes_subword.v"
+add_file -verilog "../../AESX/rtl/aes_keyexp.v"
+add_file -verilog "../../AESX/rtl/aes_core.v"
+add_file -verilog "../../AESX/rtl/aes_mode.v"
+add_file -fpga_constraint "rng.fdc"
+
+
+
+#implementation: "rev_1"
+impl -add rev_1 -type fpga
+
+#
+#implementation attributes
+
+set_option -vlog_std sysv
+set_option -num_critical_paths 10
+set_option -num_startend_points 10
+set_option -hdl_define -set IGNORE_VERILOG_BLACKBOX_GUTS
+
+#device options
+set_option -technology STRATIXV
+set_option -part 5SGXEA4H2
+set_option -package FC35
+set_option -speed_grade -2
+set_option -part_companion ""
+
+#compilation/mapping options
+set_option -use_fsm_explorer 0
+set_option -top_module "rng"
+
+# altera_options
+set_option -advanced_synthesis 0
+set_option -rw_check_on_ram 1
+
+# mapper_options
+set_option -frequency 250.000000
+set_option -write_verilog 0
+set_option -write_vhdl 0
+set_option -srs_instrumentation 1
+
+# Altera STRATIX
+set_option -run_prop_extract 1
+set_option -maxfan 30
+set_option -disable_io_insertion 1
+set_option -pipe 1
+set_option -update_models_cp 0
+set_option -retiming 1
+set_option -no_sequential_opt 0
+set_option -fix_gated_and_generated_clocks 1
+set_option -quartus_version 14.1
+
+# timing_analyst_options
+set_option -reporting_output_srm 0
+
+# sequential_optimization_options
+set_option -symbolic_fsm_compiler 1
+
+# Compiler Options
+set_option -compiler_compatible 0
+set_option -resource_sharing 0
+set_option -safe_case 1
+
+# Compiler Options
+set_option -auto_infer_blackbox 0
+
+#timing report file option
+set_option -reporting_filename "rng.ta"
+
+#automatic place and route (vendor) options
+set_option -write_apr_constraint 1
+
+#set result format/file last
+project -result_file "rev_1/rng.vqm"
+
+#design plan options
+impl -active "rev_1"

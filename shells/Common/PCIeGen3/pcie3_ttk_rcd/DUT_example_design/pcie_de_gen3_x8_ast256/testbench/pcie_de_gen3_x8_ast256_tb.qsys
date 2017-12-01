@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<system name="$${FILENAME}">
+ <component
+   name="$${FILENAME}"
+   displayName="$${FILENAME}"
+   version="1.0"
+   description=""
+   tags=""
+   categories="" />
+ <parameter name="bonusData"><![CDATA[bonusData 
+{
+   element $${FILENAME}
+   {
+   }
+   element DUT_pcie_tb
+   {
+      datum _sortIndex
+      {
+         value = "3";
+         type = "int";
+      }
+   }
+   element pcie_de_gen3_x8_ast256_inst
+   {
+      datum _sortIndex
+      {
+         value = "0";
+         type = "int";
+      }
+   }
+   element pcie_de_gen3_x8_ast256_inst_clk_bfm
+   {
+      datum _sortIndex
+      {
+         value = "1";
+         type = "int";
+      }
+   }
+   element pcie_de_gen3_x8_ast256_inst_reset_bfm
+   {
+      datum _sortIndex
+      {
+         value = "2";
+         type = "int";
+      }
+   }
+}
+]]></parameter>
+ <parameter name="clockCrossingAdapter" value="HANDSHAKE" />
+ <parameter name="device" value="Unknown" />
+ <parameter name="deviceFamily" value="Stratix V" />
+ <parameter name="deviceSpeedGrade" value="Unknown" />
+ <parameter name="fabricMode" value="QSYS" />
+ <parameter name="generateLegacySim" value="false" />
+ <parameter name="generationId" value="0" />
+ <parameter name="globalResetBus" value="false" />
+ <parameter name="hdlLanguage" value="VERILOG" />
+ <parameter name="hideFromIPCatalog" value="false" />
+ <parameter name="maxAdditionalLatency" value="1" />
+ <parameter name="projectName" value="" />
+ <parameter name="sopcBorderPoints" value="false" />
+ <parameter name="systemHash" value="0" />
+ <parameter name="testBenchDutName">pcie_de_gen3_x8_ast256</parameter>
+ <parameter name="timeStamp" value="0" />
+ <parameter name="useTestBenchNamingPattern" value="true" />
+ <instanceScript></instanceScript>
+ <module
+   kind="pcie_de_gen3_x8_ast256"
+   version="1.0"
+   enabled="1"
+   name="pcie_de_gen3_x8_ast256_inst">
+  <parameter name="AUTO_GENERATION_ID" value="0" />
+  <parameter name="AUTO_UNIQUE_ID">pcie_de_gen3_x8_ast256</parameter>
+  <parameter name="AUTO_DEVICE_FAMILY" value="Stratix V" />
+  <parameter name="AUTO_DEVICE" value="Unknown" />
+  <parameter name="AUTO_REFCLK_CLOCK_RATE" value="100000000" />
+  <parameter name="AUTO_REFCLK_CLOCK_DOMAIN" value="1" />
+  <parameter name="AUTO_REFCLK_RESET_DOMAIN" value="1" />
+  <parameter name="AUTO_CLK_CLOCK_RATE" value="0" />
+  <parameter name="AUTO_CLK_CLOCK_DOMAIN" value="2" />
+  <parameter name="AUTO_CLK_RESET_DOMAIN" value="2" />
+ </module>
+ <module
+   kind="altera_avalon_clock_source"
+   version="14.0"
+   enabled="1"
+   name="pcie_de_gen3_x8_ast256_inst_clk_bfm">
+  <parameter name="CLOCK_RATE" value="50000000" />
+  <parameter name="CLOCK_UNIT" value="1" />
+ </module>
+ <module
+   kind="altera_avalon_reset_source"
+   version="14.0"
+   enabled="1"
+   name="pcie_de_gen3_x8_ast256_inst_reset_bfm">
+  <parameter name="ASSERT_HIGH_RESET" value="0" />
+  <parameter name="INITIAL_RESET_CYCLES" value="50" />
+ </module>
+ <module kind="altera_pcie_tbed" version="14.0" enabled="1" name="DUT_pcie_tb">
+  <parameter name="use_stratixv_tb_device" value="false" />
+  <parameter name="lane_mask_hwtcl" value="x8" />
+  <parameter name="gen123_lane_rate_mode_hwtcl" value="Gen3 (8.0 Gbps)" />
+  <parameter name="port_type_hwtcl" value="Native endpoint" />
+  <parameter name="pll_refclk_freq_hwtcl" value="100 MHz" />
+  <parameter name="apps_type_hwtcl" value="3" />
+  <parameter name="serial_sim_hwtcl" value="1" />
+  <parameter name="enable_pipe32_sim_hwtcl" value="1" />
+  <parameter name="enable_tl_only_sim_hwtcl" value="0" />
+  <parameter name="deemphasis_enable_hwtcl" value="false" />
+  <parameter name="pld_clk_MHz" value="2500" />
+  <parameter name="millisecond_cycle_count_hwtcl" value="248500" />
+  <parameter name="use_crc_forwarding_hwtcl" value="0" />
+  <parameter name="ecrc_check_capable_hwtcl" value="0" />
+  <parameter name="ecrc_gen_capable_hwtcl" value="0" />
+  <parameter name="enable_pipe32_phyip_ser_driver_hwtcl" value="0" />
+ </module>
+ <connection
+   kind="clock"
+   version="14.0"
+   start="pcie_de_gen3_x8_ast256_inst_clk_bfm.clk"
+   end="pcie_de_gen3_x8_ast256_inst.clk" />
+ <connection
+   kind="clock"
+   version="14.0"
+   start="pcie_de_gen3_x8_ast256_inst_clk_bfm.clk"
+   end="pcie_de_gen3_x8_ast256_inst_reset_bfm.clk" />
+ <connection
+   kind="reset"
+   version="14.0"
+   start="pcie_de_gen3_x8_ast256_inst_reset_bfm.reset"
+   end="pcie_de_gen3_x8_ast256_inst.reset" />
+ <connection
+   kind="clock"
+   version="14.0"
+   start="DUT_pcie_tb.refclk"
+   end="pcie_de_gen3_x8_ast256_inst.refclk" />
+ <connection
+   kind="conduit"
+   version="14.0"
+   start="DUT_pcie_tb.hip_ctrl"
+   end="pcie_de_gen3_x8_ast256_inst.hip_ctrl">
+  <parameter name="endPort" value="" />
+  <parameter name="endPortLSB" value="0" />
+  <parameter name="startPort" value="" />
+  <parameter name="startPortLSB" value="0" />
+  <parameter name="width" value="0" />
+ </connection>
+ <connection
+   kind="conduit"
+   version="14.0"
+   start="DUT_pcie_tb.hip_serial"
+   end="pcie_de_gen3_x8_ast256_inst.hip_serial">
+  <parameter name="endPort" value="" />
+  <parameter name="endPortLSB" value="0" />
+  <parameter name="startPort" value="" />
+  <parameter name="startPortLSB" value="0" />
+  <parameter name="width" value="0" />
+ </connection>
+ <connection
+   kind="conduit"
+   version="14.0"
+   start="DUT_pcie_tb.hip_pipe"
+   end="pcie_de_gen3_x8_ast256_inst.hip_pipe">
+  <parameter name="endPort" value="" />
+  <parameter name="endPortLSB" value="0" />
+  <parameter name="startPort" value="" />
+  <parameter name="startPortLSB" value="0" />
+  <parameter name="width" value="0" />
+ </connection>
+ <connection
+   kind="conduit"
+   version="14.0"
+   start="DUT_pcie_tb.npor"
+   end="pcie_de_gen3_x8_ast256_inst.pcie_rstn">
+  <parameter name="endPort" value="" />
+  <parameter name="endPortLSB" value="0" />
+  <parameter name="startPort" value="" />
+  <parameter name="startPortLSB" value="0" />
+  <parameter name="width" value="0" />
+ </connection>
+ <interconnectRequirement for="$system" name="qsys_mm.clockCrossingAdapter" value="HANDSHAKE" />
+ <interconnectRequirement for="$system" name="qsys_mm.maxAdditionalLatency" value="1" />
+ <interconnectRequirement for="$system" name="qsys_mm.insertDefaultSlave" value="FALSE" />
+</system>

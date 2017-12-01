@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<simPackage>
+ <file path="core_clk_pll_sim/core_clk_pll.vo" type="VERILOG" />
+ <topLevel name="core_clk_pll" />
+ <deviceFamily name="stratixv" />
+</simPackage>

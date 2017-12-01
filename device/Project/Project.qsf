@@ -1,0 +1,3 @@
+set_global_assignment -name TOP_LEVEL_ENTITY Shell
+set_global_assignment -name SOURCE_TCL_SCRIPT_FILE Project.tcl
+set_global_assignment -name LAST_QUARTUS_VERSION "15.1.1 SP1.03"

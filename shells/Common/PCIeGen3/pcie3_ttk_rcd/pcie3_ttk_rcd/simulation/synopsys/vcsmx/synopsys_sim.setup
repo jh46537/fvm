@@ -1,0 +1,36 @@
+
+WORK > DEFAULT
+DEFAULT:                                         ./libraries/work/                                           
+work:                                            ./libraries/work/                                           
+rsp_mux:                                         ./libraries/rsp_mux/                                        
+rsp_demux:                                       ./libraries/rsp_demux/                                      
+cmd_mux:                                         ./libraries/cmd_mux/                                        
+cmd_demux:                                       ./libraries/cmd_demux/                                      
+router_002:                                      ./libraries/router_002/                                     
+router:                                          ./libraries/router/                                         
+alt_xcvr_reconfig_0_reconfig_mgmt_agent:         ./libraries/alt_xcvr_reconfig_0_reconfig_mgmt_agent/        
+pcie_reconfig_driver_0_reconfig_mgmt_agent:      ./libraries/pcie_reconfig_driver_0_reconfig_mgmt_agent/     
+alt_xcvr_reconfig_0_reconfig_mgmt_translator:    ./libraries/alt_xcvr_reconfig_0_reconfig_mgmt_translator/   
+pcie_reconfig_driver_0_reconfig_mgmt_translator: ./libraries/pcie_reconfig_driver_0_reconfig_mgmt_translator/
+p2b_adapter:                                     ./libraries/p2b_adapter/                                    
+b2p_adapter:                                     ./libraries/b2p_adapter/                                    
+transacto:                                       ./libraries/transacto/                                      
+p2b:                                             ./libraries/p2b/                                            
+b2p:                                             ./libraries/b2p/                                            
+fifo:                                            ./libraries/fifo/                                           
+timing_adt:                                      ./libraries/timing_adt/                                     
+jtag_phy_embedded_in_jtag_master:                ./libraries/jtag_phy_embedded_in_jtag_master/               
+rst_controller:                                  ./libraries/rst_controller/                                 
+mm_interconnect_0:                               ./libraries/mm_interconnect_0/                              
+master_0:                                        ./libraries/master_0/                                       
+alt_xcvr_reconfig_0:                             ./libraries/alt_xcvr_reconfig_0/                            
+pcie_reconfig_driver_0:                          ./libraries/pcie_reconfig_driver_0/                         
+DUT:                                             ./libraries/DUT/                                            
+altera_ver:                                      ./libraries/altera_ver/                                     
+lpm_ver:                                         ./libraries/lpm_ver/                                        
+sgate_ver:                                       ./libraries/sgate_ver/                                      
+altera_mf_ver:                                   ./libraries/altera_mf_ver/                                  
+altera_lnsim_ver:                                ./libraries/altera_lnsim_ver/                               
+stratixv_ver:                                    ./libraries/stratixv_ver/                                   
+stratixv_hssi_ver:                               ./libraries/stratixv_hssi_ver/                              
+stratixv_pcie_hip_ver:                           ./libraries/stratixv_pcie_hip_ver/                          

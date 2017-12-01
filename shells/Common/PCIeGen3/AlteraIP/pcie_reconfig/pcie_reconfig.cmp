@@ -1,0 +1,31 @@
+	component pcie_reconfig is
+		generic (
+			device_family                 : string  := "Stratix V";
+			number_of_reconfig_interfaces : integer := 2;
+			enable_offset                 : integer := 1;
+			enable_lc                     : integer := 1;
+			enable_dcd                    : integer := 0;
+			enable_dcd_power_up           : integer := 1;
+			enable_analog                 : integer := 1;
+			enable_eyemon                 : integer := 0;
+			enable_ber                    : integer := 0;
+			enable_dfe                    : integer := 0;
+			enable_adce                   : integer := 0;
+			enable_mif                    : integer := 0;
+			enable_pll                    : integer := 0
+		);
+		port (
+			reconfig_busy             : out std_logic;                                         -- reconfig_busy
+			mgmt_clk_clk              : in  std_logic                      := 'X';             -- clk
+			mgmt_rst_reset            : in  std_logic                      := 'X';             -- reset
+			reconfig_mgmt_address     : in  std_logic_vector(6 downto 0)   := (others => 'X'); -- address
+			reconfig_mgmt_read        : in  std_logic                      := 'X';             -- read
+			reconfig_mgmt_readdata    : out std_logic_vector(31 downto 0);                     -- readdata
+			reconfig_mgmt_waitrequest : out std_logic;                                         -- waitrequest
+			reconfig_mgmt_write       : in  std_logic                      := 'X';             -- write
+			reconfig_mgmt_writedata   : in  std_logic_vector(31 downto 0)  := (others => 'X'); -- writedata
+			reconfig_to_xcvr          : out std_logic_vector(769 downto 0);                    -- reconfig_to_xcvr
+			reconfig_from_xcvr        : in  std_logic_vector(505 downto 0) := (others => 'X')  -- reconfig_from_xcvr
+		);
+	end component pcie_reconfig;
+

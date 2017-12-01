@@ -1,0 +1,735 @@
+////////////////////////////////////////////////////////////////////////////////
+////
+////  PCIe Gen3 TLP Processor + DMA Engine
+////
+////  Microsoft Corporation 2014
+////
+////  Initial Implementation - 6/2014 - Adrian Caulfield
+////
+//////////////////////////////////////////////////////////////////////////////// 
+
+`timescale 1ps/1ps
+//DV_FIX default_nettype//`default_nettype none
+
+import PCIeTypes::*;
+
+module PCIe_Top
+#(
+  parameter SIM_ONLY = 1'b0,
+  parameter ALTERA_TTK = 1'b1, // 2014.11.12 Altera enable TTK
+  parameter FORCE_GEN2 = 1'b0,
+  parameter VENDOR_ID = 16'h1414,
+  parameter DEVICE_ID = 16'hB100,
+  parameter INCREASE_DRIVE_STRENGTH = 1'b0,
+  parameter DEBUG_WIDTH = 32
+  )
+    (
+     // PCIe clock and reset pins
+     input wire 		   pcie_refclk, // 100 MHz
+     input wire 		   pcie_reset_n, // only toggled on hard power cycle
+
+     // Generated clock and reset
+     output wire 		   pcie_clk_out, // Output of the 250 MHz clock that the PCIe logic uses
+     output wire 		   pcie_rst_out, // Reset synchronized to pcie_clk_out
+    
+     // PCIe Pins
+     input wire [7:0] 		   pcie_rx_in, // RX pins
+     output wire [7:0] 		   pcie_tx_out, // TX pins
+
+     // PCIe Status
+     output 			   PCIeStatus pcie_status_out, // PCIe status
+
+     // User general purpose registers
+     output wire [7:0] 		   gpr_number_out,
+     output wire 		   gpr_wrvalid_out,
+     output wire [63:0] 	   gpr_wrdata_out,
+     output wire 		   gpr_rdvalid_out,
+     input wire 		   gpr_rdvalid_in,
+     input wire [63:0] 		   gpr_rddata_in,
+
+     output wire [DEBUG_WIDTH-1:0] debug
+
+     );
+
+    wire 			   pcie_clk;
+    wire 			   pcie_clk_locked;
+
+    wire 			   rx_st_sop;
+    wire 			   rx_st_eop;
+    wire 			   rx_st_err;
+    wire 			   rx_st_valid;
+    wire [1:0] 			   rx_st_empty;
+    wire 			   rx_st_ready;
+    wire [255:0] 		   rx_st_data;
+    wire [7:0] 			   rx_st_bar;
+    wire 			   rx_st_mask;
+
+    wire 			   tx_st_sop;
+    wire 			   tx_st_eop;
+    wire 			   tx_st_err;
+    wire 			   tx_st_valid;
+    wire [1:0] 			   tx_st_empty;
+    wire 			   tx_st_ready;
+    wire [255:0] 		   tx_st_data;
+
+    wire [11:0] 		   tx_cred_datafccp;   
+    wire [11:0] 		   tx_cred_datafcnp;   
+    wire [11:0] 		   tx_cred_datafcp;    
+    wire [5:0] 			   tx_cred_fchipcons;  
+    wire [5:0] 			   tx_cred_fcinfinite; 
+    wire [7:0] 			   tx_cred_hdrfccp;    
+    wire [7:0] 			   tx_cred_hdrfcnp;    
+    wire [7:0] 			   tx_cred_hdrfcp;     
+
+    wire [6:0] 			   cpl_err;
+    wire 			   cpl_pending;
+    wire [7:0] 			   ko_cpl_spc_header;
+    wire [11:0] 		   ko_cpl_spc_data;  
+
+    wire 			   app_int_sts;  
+    wire [4:0] 			   app_msi_num;  
+    wire 			   app_msi_req;  
+    wire [2:0] 			   app_msi_tc;   
+    wire 			   app_int_ack;  
+    wire 			   app_msi_ack;  
+
+    wire [3:0] 			   tl_cfg_add;
+    wire [31:0] 		   tl_cfg_ctl;
+
+    wire [505:0] 		   reconfig_from_xcvr;
+    wire [769:0] 		   reconfig_to_xcvr;
+    /* 2014.11.12 Altera additions */
+   
+    wire 			   hip_status_derr_cor_ext_rcv;     //         hip_status.derr_cor_ext_rcv
+    wire 			   hip_status_derr_cor_ext_rpl;     //                                        .derr_cor_ext_rpl
+    wire 			   hip_status_derr_rpl;             //                                        .derr_rpl
+    wire 			   hip_status_dlup_exit;            //                                        .dlup_exit
+    wire 			   hip_status_ev128ns;              //                                        .ev128ns
+    wire 			   hip_status_ev1us;                //                                        .ev1us
+    wire 			   hip_status_hotrst_exit;          //                                        .hotrst_exit
+    wire [3:0] 			   hip_status_int_status;           //                                        .int_status
+    wire 			   hip_status_l2_exit;              //                                        .l2_exit
+    wire [3:0] 			   hip_status_lane_act;             //                                        .lane_act
+    wire [4:0] 			   hip_status_ltssmstate;           //                                        .ltssmstate
+    wire 			   hip_status_dlup;                 //                                        .dlup
+    wire 			   hip_status_rx_par_err;           //                                        .rx_par_err
+    wire [1:0] 			   hip_status_tx_par_err;           //                                        .tx_par_err
+    wire 			   hip_status_cfg_par_err;          //                                        .cfg_par_err
+    wire 			   pcie_hip_reset_status;
+
+    wire pcie_ltssmstate;
+	wire [31:0] rx_st_be;
+	wire [52:0] tl_cfg_sts;
+
+    // Debug hooks for altera -- this is tied off as specified on page 8-70 of doc
+    
+    logic [31:0] 		   test_in;
+
+    assign test_in[0]                                   = 1'b0;    // simulation mode, can be set to 1 to accelerate initialization
+    assign test_in[4:1]                                 = 4'b0100; // reserved
+    assign test_in[5]                                   = 1'b0;    // when set, prevents the LTSSM from entering compliance mode
+    assign test_in[31:6]                                = 26'h2;   // reserved
+
+    // Internally generated synchronous reset
+
+    logic [9:0] 		   reset_count_ff = 10'd0;
+
+    wire 			   pcie_rst = ~reset_count_ff[9];
+
+    always@(posedge pcie_clk) begin
+        if(pcie_clk_locked & ~reset_count_ff[9]) begin
+            reset_count_ff <= reset_count_ff + 1'b1;
+        end
+        else if(~pcie_clk_locked) begin
+            reset_count_ff <= 10'd0;
+        end
+    end 
+
+    // External signals
+    assign pcie_clk_out = pcie_clk;
+    assign pcie_rst_out = pcie_rst;
+
+    generate
+	// 2014.11.12 Altera
+	if (ALTERA_TTK == 1) begin
+	    pcie3_ttk u0 (
+			  .hip_ctrl_test_in                                              ( test_in ),
+			  .hip_ctrl_simu_mode_pipe                                       ( 1'b0 ),
+			  .hip_serial_rx_in0                                             ( pcie_rx_in[0] ),
+			  .hip_serial_rx_in1                                             ( pcie_rx_in[1] ),
+			  .hip_serial_rx_in2                                             ( pcie_rx_in[2] ), 
+			  .hip_serial_rx_in3                                             ( pcie_rx_in[3] ),
+			  .hip_serial_rx_in4                                             ( pcie_rx_in[4] ),
+			  .hip_serial_rx_in5                                             ( pcie_rx_in[5] ),
+			  .hip_serial_rx_in6                                             ( pcie_rx_in[6] ),
+			  .hip_serial_rx_in7                                             ( pcie_rx_in[7] ),
+			  .hip_serial_tx_out0                                            ( pcie_tx_out[0] ),
+			  .hip_serial_tx_out1                                            ( pcie_tx_out[1] ),
+			  .hip_serial_tx_out2                                            ( pcie_tx_out[2] ),
+			  .hip_serial_tx_out3                                            ( pcie_tx_out[3] ),
+			  .hip_serial_tx_out4                                            ( pcie_tx_out[4] ),
+			  .hip_serial_tx_out5                                            ( pcie_tx_out[5] ),
+			  .hip_serial_tx_out6                                            ( pcie_tx_out[6] ),
+			  .hip_serial_tx_out7                                            ( pcie_tx_out[7] ),
+			  .hip_pipe_sim_pipe_pclk_in                                     ( pcie_refclk    ),
+			  .hip_pipe_sim_pipe_rate                                        ( /* NC */ ),
+			  .hip_pipe_sim_ltssmstate                                       ( pcie_ltssmstate ),
+			  .hip_pipe_eidleinfersel0                                       ( /* NC */), 
+			  .hip_pipe_eidleinfersel1                                       ( /* NC */), 
+			  .hip_pipe_eidleinfersel2                                       ( /* NC */),
+			  .hip_pipe_eidleinfersel3                                       ( /* NC */),
+			  .hip_pipe_eidleinfersel4                                       ( /* NC */),
+			  .hip_pipe_eidleinfersel5                                       ( /* NC */),
+			  .hip_pipe_eidleinfersel6                                       ( /* NC */),
+			  .hip_pipe_eidleinfersel7                                       ( /* NC */),
+			  .hip_pipe_powerdown0                                           ( /* NC */),
+			  .hip_pipe_powerdown1                                           ( /* NC */),
+			  .hip_pipe_powerdown2                                           ( /* NC */),
+			  .hip_pipe_powerdown3                                           ( /* NC */),
+			  .hip_pipe_powerdown4                                           ( /* NC */),
+			  .hip_pipe_powerdown5                                           ( /* NC */),
+			  .hip_pipe_powerdown6                                           ( /* NC */),
+			  .hip_pipe_powerdown7                                           ( /* NC */),
+			  .hip_pipe_rxpolarity0                                          ( /* NC */),
+			  .hip_pipe_rxpolarity1                                          ( /* NC */),
+			  .hip_pipe_rxpolarity2                                          ( /* NC */),
+			  .hip_pipe_rxpolarity3                                          ( /* NC */),
+			  .hip_pipe_rxpolarity4                                          ( /* NC */),
+			  .hip_pipe_rxpolarity5                                          ( /* NC */),
+			  .hip_pipe_rxpolarity6                                          ( /* NC */),
+			  .hip_pipe_rxpolarity7                                          ( /* NC */),
+			  .hip_pipe_txcompl0                                             ( /* NC */),
+			  .hip_pipe_txcompl1                                             ( /* NC */),
+			  .hip_pipe_txcompl2                                             ( /* NC */),
+			  .hip_pipe_txcompl3                                             ( /* NC */),
+			  .hip_pipe_txcompl4                                             ( /* NC */),
+			  .hip_pipe_txcompl5                                             ( /* NC */),
+			  .hip_pipe_txcompl6                                             ( /* NC */),
+			  .hip_pipe_txcompl7                                             ( /* NC */),
+			  .hip_pipe_txdata0                                              ( /* NC */),
+			  .hip_pipe_txdata1                                              ( /* NC */),
+			  .hip_pipe_txdata2                                              ( /* NC */),
+			  .hip_pipe_txdata3                                              ( /* NC */),
+			  .hip_pipe_txdata4                                              ( /* NC */),
+			  .hip_pipe_txdata5                                              ( /* NC */),
+			  .hip_pipe_txdata6                                              ( /* NC */),
+			  .hip_pipe_txdata7                                              ( /* NC */),
+			  .hip_pipe_txdatak0                                             ( /* NC */),
+			  .hip_pipe_txdatak1                                             ( /* NC */),
+			  .hip_pipe_txdatak2                                             ( /* NC */),
+			  .hip_pipe_txdatak3                                             ( /* NC */),
+			  .hip_pipe_txdatak4                                             ( /* NC */),
+			  .hip_pipe_txdatak5                                             ( /* NC */),
+			  .hip_pipe_txdatak6                                             ( /* NC */),
+			  .hip_pipe_txdatak7                                             ( /* NC */),
+			  .hip_pipe_txdetectrx0                                          ( /* NC */),
+			  .hip_pipe_txdetectrx1                                          ( /* NC */),
+			  .hip_pipe_txdetectrx2                                          ( /* NC */),
+			  .hip_pipe_txdetectrx3                                          ( /* NC */),
+			  .hip_pipe_txdetectrx4                                          ( /* NC */),
+			  .hip_pipe_txdetectrx5                                          ( /* NC */),
+			  .hip_pipe_txdetectrx6                                          ( /* NC */),
+			  .hip_pipe_txdetectrx7                                          ( /* NC */),
+			  .hip_pipe_txelecidle0                                          ( /* NC */),
+			  .hip_pipe_txelecidle1                                          ( /* NC */),
+			  .hip_pipe_txelecidle2                                          ( /* NC */),
+			  .hip_pipe_txelecidle3                                          ( /* NC */),
+			  .hip_pipe_txelecidle4                                          ( /* NC */),
+			  .hip_pipe_txelecidle5                                          ( /* NC */),
+			  .hip_pipe_txelecidle6                                          ( /* NC */),
+			  .hip_pipe_txelecidle7                                          ( /* NC */),
+			  .hip_pipe_txdeemph0                                            ( /* NC */),
+			  .hip_pipe_txdeemph1                                            ( /* NC */),
+			  .hip_pipe_txdeemph2                                            ( /* NC */),
+			  .hip_pipe_txdeemph3                                            ( /* NC */),
+			  .hip_pipe_txdeemph4                                            ( /* NC */),
+			  .hip_pipe_txdeemph5                                            ( /* NC */),
+			  .hip_pipe_txdeemph6                                            ( /* NC */),
+			  .hip_pipe_txdeemph7                                            ( /* NC */),
+			  .hip_pipe_txmargin0                                            ( /* NC */),
+			  .hip_pipe_txmargin1                                            ( /* NC */),
+			  .hip_pipe_txmargin2                                            ( /* NC */),
+			  .hip_pipe_txmargin3                                            ( /* NC */),
+			  .hip_pipe_txmargin4                                            ( /* NC */),
+			  .hip_pipe_txmargin5                                            ( /* NC */),
+			  .hip_pipe_txmargin6                                            ( /* NC */),
+			  .hip_pipe_txmargin7                                            ( /* NC */),
+			  .hip_pipe_txswing0                                             ( /* NC */),
+			  .hip_pipe_txswing1                                             ( /* NC */),
+			  .hip_pipe_txswing2                                             ( /* NC */),
+			  .hip_pipe_txswing3                                             ( /* NC */),
+			  .hip_pipe_txswing4                                             ( /* NC */),
+			  .hip_pipe_txswing5                                             ( /* NC */),
+			  .hip_pipe_txswing6                                             ( /* NC */),
+			  .hip_pipe_txswing7                                             ( /* NC */),
+			  .hip_pipe_phystatus0                                           ( /* NC */),
+			  .hip_pipe_phystatus1                                           ( /* NC */),
+			  .hip_pipe_phystatus2                                           ( /* NC */),
+			  .hip_pipe_phystatus3                                           ( /* NC */),
+			  .hip_pipe_phystatus4                                           ( /* NC */),
+			  .hip_pipe_phystatus5                                           ( /* NC */),
+			  .hip_pipe_phystatus6                                           ( /* NC */),
+			  .hip_pipe_phystatus7                                           ( /* NC */),
+			  .hip_pipe_rxdata0                                              ( /* NC */),
+			  .hip_pipe_rxdata1                                              ( /* NC */),
+			  .hip_pipe_rxdata2                                              ( /* NC */),
+			  .hip_pipe_rxdata3                                              ( /* NC */),
+			  .hip_pipe_rxdata4                                              ( /* NC */),
+			  .hip_pipe_rxdata5                                              ( /* NC */),
+			  .hip_pipe_rxdata6                                              ( /* NC */),
+			  .hip_pipe_rxdata7                                              ( /* NC */),
+			  .hip_pipe_rxdatak0                                             ( /* NC */),
+			  .hip_pipe_rxdatak1                                             ( /* NC */),
+			  .hip_pipe_rxdatak2                                             ( /* NC */),
+			  .hip_pipe_rxdatak3                                             ( /* NC */),
+			  .hip_pipe_rxdatak4                                             ( /* NC */),
+			  .hip_pipe_rxdatak5                                             ( /* NC */),
+			  .hip_pipe_rxdatak6                                             ( /* NC */),
+			  .hip_pipe_rxdatak7                                             ( /* NC */),
+			  .hip_pipe_rxelecidle0                                          ( /* NC */),
+			  .hip_pipe_rxelecidle1                                          ( /* NC */),
+			  .hip_pipe_rxelecidle2                                          ( /* NC */),
+			  .hip_pipe_rxelecidle3                                          ( /* NC */),
+			  .hip_pipe_rxelecidle4                                          ( /* NC */),
+			  .hip_pipe_rxelecidle5                                          ( /* NC */),
+			  .hip_pipe_rxelecidle6                                          ( /* NC */),
+			  .hip_pipe_rxelecidle7                                          ( /* NC */),
+			  .hip_pipe_rxstatus0                                            ( /* NC */),
+			  .hip_pipe_rxstatus1                                            ( /* NC */),
+			  .hip_pipe_rxstatus2                                            ( /* NC */),
+			  .hip_pipe_rxstatus3                                            ( /* NC */),
+			  .hip_pipe_rxstatus4                                            ( /* NC */),
+			  .hip_pipe_rxstatus5                                            ( /* NC */),
+			  .hip_pipe_rxstatus6                                            ( /* NC */),
+			  .hip_pipe_rxstatus7                                            ( /* NC */),
+			  .hip_pipe_rxvalid0                                             ( /* NC */),
+			  .hip_pipe_rxvalid1                                             ( /* NC */),
+			  .hip_pipe_rxvalid2                                             ( /* NC */),
+			  .hip_pipe_rxvalid3                                             ( /* NC */),
+			  .hip_pipe_rxvalid4                                             ( /* NC */),
+			  .hip_pipe_rxvalid5                                             ( /* NC */),
+			  .hip_pipe_rxvalid6                                             ( /* NC */),
+			  .hip_pipe_rxvalid7                                             ( /* NC */),
+			  .refclk_clk                                                    ( pcie_refclk ),
+			  .pcie_rstn_npor                                                ( pcie_reset_n ),
+			  .pcie_rstn_pin_perst                                           ( pcie_reset_n ),
+			  .clk_clk                                                       ( pcie_refclk ),
+			  .reset_reset_n                                                 ( pcie_reset_n ), // use this to reset reconfig block
+			  .dut_rx_st_startofpacket                                       ( rx_st_sop ),
+			  .dut_rx_st_endofpacket                                         ( rx_st_eop ),
+			  .dut_rx_st_error                                               ( rx_st_err ),
+			  .dut_rx_st_valid                                               ( rx_st_valid ),
+			  .dut_rx_st_empty                                               ( rx_st_empty ),
+			  .dut_rx_st_ready                                               ( rx_st_ready ),
+			  .dut_rx_st_data                                                ( rx_st_data ),
+			  .dut_rx_bar_be_rx_st_bar                                       ( rx_st_bar ),
+			  .dut_rx_bar_be_rx_st_be                                        ( rx_st_be ),
+			  .dut_rx_bar_be_rx_st_mask                                      ( rx_st_mask ),
+			  .dut_tx_st_startofpacket                                       ( tx_st_sop ),
+			  .dut_tx_st_endofpacket                                         ( tx_st_eop ),
+			  .dut_tx_st_error                                               ( tx_st_err ),
+			  .dut_tx_st_valid                                               ( tx_st_valid ),
+			  .dut_tx_st_empty                                               ( tx_st_empty ),
+			  .dut_tx_st_ready                                               ( tx_st_ready ),
+			  .dut_tx_st_data                                                ( tx_st_data ),
+			  .dut_tx_cred_tx_cred_datafccp                                  ( tx_cred_datafccp ),
+			  .dut_tx_cred_tx_cred_datafcnp                                  ( tx_cred_datafcnp ),
+			  .dut_tx_cred_tx_cred_datafcp                                   ( tx_cred_datafcp ),
+			  .dut_tx_cred_tx_cred_fchipcons                                 ( tx_cred_fchipcons ),
+			  .dut_tx_cred_tx_cred_fcinfinite                                ( tx_cred_fcinfinite ),
+			  .dut_tx_cred_tx_cred_hdrfccp                                   ( tx_cred_hdrfccp ),
+			  .dut_tx_cred_tx_cred_hdrfcnp                                   ( tx_cred_hdrfcnp ),
+			  .dut_tx_cred_tx_cred_hdrfcp                                    ( tx_cred_hdrfcp ),
+			  .dut_int_msi_app_int_sts                                       ( app_int_sts ),
+			  .dut_int_msi_app_msi_num                                       ( app_msi_num ),
+			  .dut_int_msi_app_msi_req                                       ( app_msi_req ),
+			  .dut_int_msi_app_msi_tc                                        ( app_msi_tc ),
+			  .dut_int_msi_app_int_ack                                       ( app_int_ack ),
+			  .dut_int_msi_app_msi_ack                                       ( app_msi_ack ),
+			  .dut_hip_rst_reset_status                                      ( pcie_hip_reset_status ),
+			  .dut_hip_rst_serdes_pll_locked                                 ( pcie_clk_locked ),
+			  .dut_hip_rst_pld_clk_inuse                                     ( /* NC */),
+			  .dut_hip_rst_pld_core_ready                                    ( pcie_clk_locked ),
+			  .dut_hip_rst_testin_zero                                       ( /* NC */),
+			  .dut_config_tl_tl_cfg_add                                  ( tl_cfg_add ),
+			  .dut_config_tl_tl_cfg_ctl                                  ( tl_cfg_ctl ),
+			  .dut_config_tl_tl_cfg_sts                                  ( tl_cfg_sts ), // add wire [52:0]
+			  .dut_config_tl_cpl_err                                         ( cpl_err ),
+			  .dut_config_tl_cpl_pending                                     ( cpl_pending ),
+			  .pcie_reconfig_driver_hip_status_derr_cor_ext_rcv              ( hip_status_derr_cor_ext_rcv ),     //         .pcie_reconfig_driver_hip_status.derr_cor_ext_rcv
+		          .pcie_reconfig_driver_hip_status_derr_cor_ext_rpl              ( hip_status_derr_cor_ext_rpl ),     //                                        .derr_cor_ext_rpl
+		          .pcie_reconfig_driver_hip_status_derr_rpl                      ( hip_status_derr_rpl ),             //                                        .derr_rpl
+		          .pcie_reconfig_driver_hip_status_dlup_exit                     ( hip_status_dlup_exit ),            //                                        .dlup_exit
+		          .pcie_reconfig_driver_hip_status_ev128ns                       ( hip_status_ev128ns ),              //                                        .ev128ns
+		          .pcie_reconfig_driver_hip_status_ev1us                         ( hip_status_ev1us ),                //                                        .ev1us
+		          .pcie_reconfig_driver_hip_status_hotrst_exit                   ( hip_status_hotrst_exit ),          //                                        .hotrst_exit
+			  .pcie_reconfig_driver_hip_status_int_status                    ( hip_status_int_status ),           //                                        .int_status
+		          .pcie_reconfig_driver_hip_status_l2_exit                       ( hip_status_l2_exit ),              //                                        .l2_exit
+			  .pcie_reconfig_driver_hip_status_lane_act                      ( pcie_status_out.lanes ),             //                                        .lane_act
+			  .pcie_reconfig_driver_hip_status_ltssmstate                    ( hip_status_ltssmstate ),           //                                        .ltssmstate
+		          .pcie_reconfig_driver_hip_status_dlup                          ( hip_status_dlup ),                 //                                        .dlup
+		          .pcie_reconfig_driver_hip_status_rx_par_err                    ( hip_status_rx_par_err ),           //                                        .rx_par_err
+			  .pcie_reconfig_driver_hip_status_tx_par_err                    ( hip_status_tx_par_err ),           //                                        .tx_par_err
+		          .pcie_reconfig_driver_hip_status_cfg_par_err                   ( hip_status_cfg_par_err ),          //                                        .cfg_par_err
+			  .pcie_reconfig_driver_hip_status_ko_cpl_spc_header             ( ko_cpl_spc_header ),    //                                        .ko_cpl_spc_header
+			  .pcie_reconfig_driver_hip_status_ko_cpl_spc_data               ( ko_cpl_spc_data ),
+			  .dut_hip_status_derr_cor_ext_rcv                               ( hip_status_derr_cor_ext_rcv),                                   //                                  hip_status.derr_cor_ext_rcv
+			  .dut_hip_status_derr_cor_ext_rpl                               ( hip_status_derr_cor_ext_rpl),                                   //                                            .derr_cor_ext_rpl
+			  .dut_hip_status_derr_rpl                                       ( hip_status_derr_rpl),                                           //                                            .derr_rpl
+			  .dut_hip_status_dlup                                           ( hip_status_dlup),                                               //                                            .dlup
+			  .dut_hip_status_dlup_exit                                      ( hip_status_dlup_exit),                                          //                                            .dlup_exit
+			  .dut_hip_status_ev128ns                                        ( hip_status_ev128ns),                                            //                                            .ev128ns
+			  .dut_hip_status_ev1us                                          ( hip_status_ev1us),                                              //                                            .ev1us
+			  .dut_hip_status_hotrst_exit                                    ( hip_status_hotrst_exit),                                        //                                            .hotrst_exit
+			  .dut_hip_status_int_status                                     ( hip_status_int_status),                                         //                                            .int_status
+			  .dut_hip_status_l2_exit                                        ( hip_status_l2_exit),                                            //                                            .l2_exit
+			  .dut_hip_status_lane_act                                       ( pcie_status_out.lanes ),
+			  .dut_hip_status_ltssmstate                                     ( hip_status_ltssmstate),                                         //                                            .ltssmstate
+			  .dut_hip_status_rx_par_err                                     ( hip_status_rx_par_err),                                         //                                            .rx_par_err
+			  .dut_hip_status_tx_par_err                                     ( hip_status_tx_par_err),                                         //                                            .tx_par_err
+			  .dut_hip_status_cfg_par_err                                    ( hip_status_cfg_par_err),                                        //                                            .cfg_par_err
+			  .dut_hip_status_ko_cpl_spc_header                              ( ko_cpl_spc_header ),
+			  .dut_hip_status_ko_cpl_spc_data                                ( ko_cpl_spc_data )
+			  //.dut_hip_currentspeed_currentspeed                             ( pcie_status_out.speed ),	// this is connected inside Qsys
+	 	          //.pcie_reconfig_driver_0_hip_currentspeed_currentspeed          ( pcie_status_out.speed ) 			 
+ );
+	    
+
+	end
+	else if(SIM_ONLY == 0) begin
+            pcie3
+            #(
+              .FORCE_GEN2                             (FORCE_GEN2),
+              .VENDOR_ID                              (VENDOR_ID),
+              .DEVICE_ID                              (DEVICE_ID),
+              .INCREASE_DRIVE_STRENGTH                (INCREASE_DRIVE_STRENGTH),
+              .DEBUG_WIDTH                            (DEBUG_WIDTH)
+              ) 
+            pcie_ep 
+            (
+             .refclk                                 (pcie_refclk),
+             .npor                                   (pcie_reset_n),
+             .pin_perst                              (pcie_reset_n),
+
+             .coreclkout_hip                         (pcie_clk),
+             .pld_clk                                (pcie_clk),
+             .serdes_pll_locked                      (pcie_clk_locked),
+             .pld_core_ready                         (pcie_clk_locked),
+                
+             .rx_in0                                 (pcie_rx_in[0]), 
+             .rx_in1                                 (pcie_rx_in[1]), 
+             .rx_in2                                 (pcie_rx_in[2]), 
+             .rx_in3                                 (pcie_rx_in[3]), 
+             .rx_in4                                 (pcie_rx_in[4]), 
+             .rx_in5                                 (pcie_rx_in[5]), 
+             .rx_in6                                 (pcie_rx_in[6]), 
+             .rx_in7                                 (pcie_rx_in[7]), 
+             .tx_out0                                (pcie_tx_out[0]),
+             .tx_out1                                (pcie_tx_out[1]),
+             .tx_out2                                (pcie_tx_out[2]),
+             .tx_out3                                (pcie_tx_out[3]),
+             .tx_out4                                (pcie_tx_out[4]),
+             .tx_out5                                (pcie_tx_out[5]),
+             .tx_out6                                (pcie_tx_out[6]),
+             .tx_out7                                (pcie_tx_out[7]),
+
+             .rx_st_sop                              (rx_st_sop),   
+             .rx_st_eop                              (rx_st_eop),   
+             .rx_st_err                              (rx_st_err),   
+             .rx_st_valid                            (rx_st_valid), 
+             .rx_st_empty                            (rx_st_empty), 
+             .rx_st_ready                            (rx_st_ready), 
+             .rx_st_data                             (rx_st_data),  
+             .rx_st_bar                              (rx_st_bar),   
+             .rx_st_mask                             (rx_st_mask),
+                
+             .tx_st_sop                              (tx_st_sop),   
+             .tx_st_eop                              (tx_st_eop),   
+             .tx_st_err                              (tx_st_err),   
+             .tx_st_valid                            (tx_st_valid), 
+             .tx_st_empty                            (tx_st_empty), 
+             .tx_st_ready                            (tx_st_ready), 
+             .tx_st_data                             (tx_st_data),  
+
+             .tx_cred_datafccp                       (tx_cred_datafccp),
+             .tx_cred_datafcnp                       (tx_cred_datafcnp),
+             .tx_cred_datafcp                        (tx_cred_datafcp),
+             .tx_cred_fchipcons                      (tx_cred_fchipcons),
+             .tx_cred_fcinfinite                     (tx_cred_fcinfinite),
+             .tx_cred_hdrfccp                        (tx_cred_hdrfccp),
+             .tx_cred_hdrfcnp                        (tx_cred_hdrfcnp),
+             .tx_cred_hdrfcp                         (tx_cred_hdrfcp),
+                
+             .cpl_err                                (cpl_err),
+             .cpl_pending                            (cpl_pending),
+             .ko_cpl_spc_header                      (ko_cpl_spc_header),
+             .ko_cpl_spc_data                        (ko_cpl_spc_data),
+                
+             .app_msi_req                            (app_msi_req),
+             .app_msi_ack                            (app_msi_ack),
+             .app_msi_tc                             (app_msi_tc),
+             .app_msi_num                            (app_msi_num),
+             .app_int_sts                            (app_int_sts),
+             .app_int_ack                            (app_int_ack),
+                
+             .tl_cfg_add                             (tl_cfg_add),
+             .tl_cfg_ctl                             (tl_cfg_ctl),
+                
+             .reconfig_to_xcvr                       (reconfig_to_xcvr),
+             .reconfig_from_xcvr                     (reconfig_from_xcvr),
+                
+             .test_in                                (test_in),
+             .currentspeed                           (pcie_status_out.speed),
+             .lane_act                               (pcie_status_out.lanes),
+
+             .debug                                  (debug)
+             );
+        end
+             else if(SIM_ONLY == 1) begin
+		 PCIe_Sim PCIe_Sim
+		 (
+                  .refclk                                 (pcie_refclk),
+                  .reset                                  (pcie_rst),
+                  .npor                                   (pcie_reset_n),
+                  .pin_perst                              (pcie_reset_n),
+
+                  .coreclkout_hip                         (pcie_clk),
+                  .pld_clk                                (pcie_clk),
+                  .serdes_pll_locked                      (pcie_clk_locked),
+                  .pld_core_ready                         (pcie_clk_locked),
+
+                  .rx_in0                                 (pcie_rx_in[0]), 
+                  .rx_in1                                 (pcie_rx_in[1]), 
+                  .rx_in2                                 (pcie_rx_in[2]), 
+                  .rx_in3                                 (pcie_rx_in[3]), 
+                  .rx_in4                                 (pcie_rx_in[4]), 
+                  .rx_in5                                 (pcie_rx_in[5]), 
+                  .rx_in6                                 (pcie_rx_in[6]), 
+                  .rx_in7                                 (pcie_rx_in[7]), 
+                  .tx_out0                                (pcie_tx_out[0]),
+                  .tx_out1                                (pcie_tx_out[1]),
+                  .tx_out2                                (pcie_tx_out[2]),
+                  .tx_out3                                (pcie_tx_out[3]),
+                  .tx_out4                                (pcie_tx_out[4]),
+                  .tx_out5                                (pcie_tx_out[5]),
+                  .tx_out6                                (pcie_tx_out[6]),
+                  .tx_out7                                (pcie_tx_out[7]),
+		     
+                  .rx_st_sop                              (rx_st_sop),   
+                  .rx_st_eop                              (rx_st_eop),   
+                  .rx_st_err                              (rx_st_err),   
+                  .rx_st_valid                            (rx_st_valid), 
+                  .rx_st_empty                            (rx_st_empty), 
+                  .rx_st_ready                            (rx_st_ready), 
+                  .rx_st_data                             (rx_st_data),  
+                  .rx_st_bar                              (rx_st_bar),   
+                  .rx_st_mask                             (rx_st_mask),
+                     
+                  .tx_st_sop                              (tx_st_sop),   
+                  .tx_st_eop                              (tx_st_eop),   
+                  .tx_st_err                              (tx_st_err),   
+                  .tx_st_valid                            (tx_st_valid), 
+                  .tx_st_empty                            (tx_st_empty), 
+                  .tx_st_ready                            (tx_st_ready), 
+                  .tx_st_data                             (tx_st_data),  
+
+                  .tx_cred_datafccp                       (tx_cred_datafccp),
+                  .tx_cred_datafcnp                       (tx_cred_datafcnp),
+                  .tx_cred_datafcp                        (tx_cred_datafcp),
+                  .tx_cred_fchipcons                      (tx_cred_fchipcons),
+                  .tx_cred_fcinfinite                     (tx_cred_fcinfinite),
+                  .tx_cred_hdrfccp                        (tx_cred_hdrfccp),
+                  .tx_cred_hdrfcnp                        (tx_cred_hdrfcnp),
+                  .tx_cred_hdrfcp                         (tx_cred_hdrfcp),
+                     
+                  .cpl_err                                (cpl_err),
+                  .cpl_pending                            (cpl_pending),
+                  .ko_cpl_spc_header                      (ko_cpl_spc_header),
+                  .ko_cpl_spc_data                        (ko_cpl_spc_data),
+                     
+                  .app_msi_req                            (app_msi_req),
+                  .app_msi_ack                            (app_msi_ack),
+                  .app_msi_tc                             (app_msi_tc),
+                  .app_msi_num                            (app_msi_num),
+                  .app_int_sts                            (app_int_sts),
+                  .app_int_ack                            (app_int_ack),
+                     
+                  .tl_cfg_add                             (tl_cfg_add),
+                  .tl_cfg_ctl                             (tl_cfg_ctl),
+                     
+                  .reconfig_to_xcvr                       (reconfig_to_xcvr),
+                  .reconfig_from_xcvr                     (reconfig_from_xcvr),
+                     
+                  .test_in                                (test_in),
+                  .currentspeed                           (pcie_status_out.speed),
+                  .lane_act                               (pcie_status_out.lanes)
+		  );
+             end
+
+    endgenerate
+
+    DMA_REQUEST                                         dma_fetch_request;
+    logic                                               dma_fetch_request_valid;
+    logic                                               dma_fetch_request_rden;
+    
+    logic [255:0] 					dma_fetch_data;
+    logic                                               dma_fetch_data_wren;
+    logic                                               dma_fetch_data_afull;
+
+    DMA_REQUEST                                         dma_send_request;
+    logic                                               dma_send_request_valid;
+    logic                                               dma_send_request_rden;
+
+    logic [255:0] 					dma_send_data;
+    logic                                               dma_send_data_valid;
+    logic                                               dma_send_data_rden;
+    logic                                               dma_send_finished_strobe;
+
+    logic [63:0] 					reg_write_data;
+    logic [63:0] 					reg_write_addr;
+    logic                                               reg_write_valid;
+
+    logic                                               reg_read_valid;
+    logic [63:0] 					reg_read_addr;
+    logic [63:0] 					reg_read_data;
+    logic                                               reg_read_data_valid;
+
+    generate
+        if ((ALTERA_TTK == 0) & (SIM_ONLY == 0)) begin	// 2014.11.12 Altera
+            pcie_reconfig pcie_reconfig 
+            (
+                .mgmt_clk_clk                           (pcie_refclk),
+                .mgmt_rst_reset                         (~pcie_reset_n),
+                .reconfig_to_xcvr                       (reconfig_to_xcvr),
+                .reconfig_from_xcvr                     (reconfig_from_xcvr)
+            );
+        end
+        else begin
+            assign reconfig_from_xcvr = {$bits(reconfig_from_xcvr){1'b0}};
+        end
+    endgenerate
+
+    
+    
+    PCIe pcie 
+    (
+     .clk                                            (pcie_clk), 
+     .reset                                          (pcie_rst),
+
+     .rx_st_data                                     (rx_st_data),
+     .rx_st_sop                                      (rx_st_sop),
+     .rx_st_eop                                      (rx_st_eop),
+     .rx_st_empty                                    (rx_st_empty),
+     .rx_st_ready                                    (rx_st_ready),
+     .rx_st_valid                                    (rx_st_valid),
+     .rx_st_err                                      (rx_st_err),
+     .rx_st_mask                                     (rx_st_mask),
+     .rx_st_bar                                      (rx_st_bar),
+
+     .tx_st_data                                     (tx_st_data),
+     .tx_st_sop                                      (tx_st_sop),
+     .tx_st_eop                                      (tx_st_eop),
+     .tx_st_ready                                    (tx_st_ready),
+     .tx_st_valid                                    (tx_st_valid),
+     .tx_st_empty                                    (tx_st_empty),
+     .tx_st_err                                      (tx_st_err),
+
+     .tx_cred_datafccp                               (tx_cred_datafccp),
+     .tx_cred_datafcnp                               (tx_cred_datafcnp),
+     .tx_cred_datafcp                                (tx_cred_datafcp),
+     .tx_cred_fchipcons                              (tx_cred_fchipcons),
+     .tx_cred_fc_infinite                            (tx_cred_fcinfinite),
+     .tx_cred_hdrfccp                                (tx_cred_hdrfccp),
+     .tx_cred_hdrfcnp                                (tx_cred_hdrfcnp),
+     .tx_cred_hdrfcp                                 (tx_cred_hdrfcp),  
+     .ko_cpl_spc_header                              (ko_cpl_spc_header),
+     .ko_cpl_spc_data                                (ko_cpl_spc_data),
+
+     .app_msi_req                                    (app_msi_req),
+     .app_msi_ack                                    (app_msi_ack),
+     .app_msi_tc                                     (app_msi_tc),
+     .app_msi_num                                    (app_msi_num),
+     .app_int_sts                                    (app_int_sts),
+     .app_int_ack                                    (app_int_ack),
+
+     .cpl_err                                        (cpl_err),
+     .cpl_pending                                    (cpl_pending),
+
+     .tl_cfg_add                                     (tl_cfg_add),
+     .tl_cfg_ctl                                     (tl_cfg_ctl),
+
+     .dma_fetch_request_in                           (dma_fetch_request),
+     .dma_fetch_request_valid_in                     (dma_fetch_request_valid),
+     .dma_fetch_request_rden_out                     (dma_fetch_request_rden),
+        
+     .dma_fetch_data_out                             (dma_fetch_data),
+     .dma_fetch_data_wren_out                        (dma_fetch_data_wren),
+     .dma_fetch_data_afull_in                        (dma_fetch_data_afull),
+        
+     .dma_send_request_in                            (dma_send_request),
+     .dma_send_request_valid_in                      (dma_send_request_valid),
+     .dma_send_request_rden_out                      (dma_send_request_rden),
+        
+     .dma_send_data_in                               (dma_send_data),
+     .dma_send_data_valid_in                         (dma_send_data_valid),
+     .dma_send_data_rden_out                         (dma_send_data_rden),
+     .dma_send_finished_strobe_out                   (dma_send_finished_strobe),
+
+     .reg_write_data_out                             (reg_write_data),
+     .reg_write_addr_out                             (reg_write_addr),
+     .reg_write_valid_out                            (reg_write_valid),
+
+     .reg_read_valid_out                             (reg_read_valid),
+     .reg_read_addr_out                              (reg_read_addr),
+     .reg_read_data_in                               (reg_read_data),
+     .reg_read_valid_in                              (reg_read_data_valid)
+     );
+
+
+    
+
+    PCIe_Control PCIe_Control
+    (
+     .clk                                            (pcie_clk),
+     .reset                                          (pcie_rst),
+
+     .dma_send_request_out                           (dma_send_request),
+     .dma_send_request_valid_out                     (dma_send_request_valid),
+     .dma_send_request_rden_in                       (dma_send_request_rden),
+
+     .dma_send_data_out                              (dma_send_data),
+     .dma_send_data_valid_out                        (dma_send_data_valid),
+     .dma_send_data_rden_in                          (dma_send_data_rden),
+     .dma_send_finished_strobe_in                    (dma_send_finished_strobe),
+
+     .dma_fetch_request_out                          (dma_fetch_request),
+     .dma_fetch_request_valid_out                    (dma_fetch_request_valid),
+     .dma_fetch_request_rden_in                      (dma_fetch_request_rden),
+
+     .dma_fetch_data_in                              (dma_fetch_data),
+     .dma_fetch_data_wren_in                         (dma_fetch_data_wren),
+     .dma_fetch_data_afull_out                       (dma_fetch_data_afull),
+
+     // PCIe system registers
+     .reg_write_data_in                              (reg_write_data),
+     .reg_write_addr_in                              (reg_write_addr),
+     .reg_write_valid_in                             (reg_write_valid),
+
+     .reg_read_valid_in                              (reg_read_valid),
+     .reg_read_addr_in                               (reg_read_addr),
+     .reg_read_data_out                              (reg_read_data),
+     .reg_read_valid_out                             (reg_read_data_valid),
+
+     // User general purpose registers
+     .gpr_number_out                                 (gpr_number_out),
+     .gpr_wrvalid_out                                (gpr_wrvalid_out),
+     .gpr_wrdata_out                                 (gpr_wrdata_out),
+     .gpr_rdvalid_out                                (gpr_rdvalid_out),
+     .gpr_rdvalid_in                                 (gpr_rdvalid_in),
+     .gpr_rddata_in                                  (gpr_rddata_in)
+     );
+
+
+endmodule
+
+//DV_FIX default_nettype//`default_nettype wire          

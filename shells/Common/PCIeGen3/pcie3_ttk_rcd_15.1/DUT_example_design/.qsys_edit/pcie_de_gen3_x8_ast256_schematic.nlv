@@ -1,0 +1,37 @@
+# # File gsaved with Nlview version 6.3.8  2013-12-19 bk=1.2992 VDI=34 GEI=35
+# 
+preplace inst pcie_de_gen3_x8_ast256.DUT -pg 1 -lvl 1 -y 60
+preplace inst pcie_de_gen3_x8_ast256.alt_xcvr_reconfig_0 -pg 1 -lvl 4 -y 800
+preplace inst pcie_de_gen3_x8_ast256.clk_0 -pg 1 -lvl 2 -y 740
+preplace inst pcie_de_gen3_x8_ast256.APPS -pg 1 -lvl 2 -y 420
+preplace inst pcie_de_gen3_x8_ast256 -pg 1 -lvl 1 -y 40 -regy -20
+preplace inst pcie_de_gen3_x8_ast256.pcie_reconfig_driver_0 -pg 1 -lvl 3 -y 660
+preplace netloc POINT_TO_POINT<net_container>pcie_de_gen3_x8_ast256</net_container>(SLAVE)APPS.power_mngt,(SLAVE)DUT.power_mngt) 1 0 2 210 570 NJ
+preplace netloc FAN_OUT<net_container>pcie_de_gen3_x8_ast256</net_container>(SLAVE)alt_xcvr_reconfig_0.mgmt_rst_reset,(SLAVE)pcie_reconfig_driver_0.reconfig_xcvr_rst,(MASTER)clk_0.clk_reset) 1 2 2 870 830 NJ
+preplace netloc POINT_TO_POINT<net_container>pcie_de_gen3_x8_ast256</net_container>(SLAVE)alt_xcvr_reconfig_0.reconfig_mgmt,(MASTER)pcie_reconfig_driver_0.reconfig_mgmt) 1 3 1 1150
+preplace netloc POINT_TO_POINT<net_container>pcie_de_gen3_x8_ast256</net_container>(SLAVE)DUT.tx_st,(MASTER)APPS.tx_st) 1 0 3 310 510 NJ 410 870
+preplace netloc POINT_TO_POINT<net_container>pcie_de_gen3_x8_ast256</net_container>(SLAVE)DUT.int_msi,(SLAVE)APPS.int_msi) 1 0 2 150 530 NJ
+preplace netloc EXPORT<net_container>pcie_de_gen3_x8_ast256</net_container>(SLAVE)DUT.npor,(SLAVE)pcie_de_gen3_x8_ast256.pcie_rstn) 1 0 1 NJ
+preplace netloc EXPORT<net_container>pcie_de_gen3_x8_ast256</net_container>(SLAVE)pcie_de_gen3_x8_ast256.hip_serial,(SLAVE)DUT.hip_serial) 1 0 1 NJ
+preplace netloc POINT_TO_POINT<net_container>pcie_de_gen3_x8_ast256</net_container>(SLAVE)pcie_reconfig_driver_0.hip_status_drv,(SLAVE)APPS.hip_status_drv) 1 1 2 640 690 NJ
+preplace netloc FAN_OUT<net_container>pcie_de_gen3_x8_ast256</net_container>(MASTER)clk_0.clk,(SLAVE)alt_xcvr_reconfig_0.mgmt_clk_clk,(SLAVE)pcie_reconfig_driver_0.reconfig_xcvr_clk) 1 2 2 890 810 NJ
+preplace netloc FAN_OUT<net_container>pcie_de_gen3_x8_ast256</net_container>(MASTER)APPS.pld_clk_hip,(SLAVE)pcie_reconfig_driver_0.pld_clk,(SLAVE)DUT.pld_clk) 1 0 3 270 470 NJ 390 910
+preplace netloc POINT_TO_POINT<net_container>pcie_de_gen3_x8_ast256</net_container>(SLAVE)DUT.rx_bar_be,(SLAVE)APPS.rx_bar_be) 1 0 2 250 590 NJ
+preplace netloc EXPORT<net_container>pcie_de_gen3_x8_ast256</net_container>(SLAVE)pcie_de_gen3_x8_ast256.refclk,(SLAVE)DUT.refclk) 1 0 1 NJ
+preplace netloc POINT_TO_POINT<net_container>pcie_de_gen3_x8_ast256</net_container>(SLAVE)DUT.hip_currentspeed,(SLAVE)pcie_reconfig_driver_0.hip_currentspeed) 1 0 3 110 670 NJ 670 NJ
+preplace netloc POINT_TO_POINT<net_container>pcie_de_gen3_x8_ast256</net_container>(SLAVE)APPS.tx_cred,(SLAVE)DUT.tx_cred) 1 0 2 290 490 500
+preplace netloc POINT_TO_POINT<net_container>pcie_de_gen3_x8_ast256</net_container>(SLAVE)APPS.config_tl,(SLAVE)DUT.config_tl) 1 0 2 230 450 560
+preplace netloc EXPORT<net_container>pcie_de_gen3_x8_ast256</net_container>(SLAVE)pcie_de_gen3_x8_ast256.hip_pipe,(SLAVE)DUT.hip_pipe) 1 0 1 NJ
+preplace netloc POINT_TO_POINT<net_container>pcie_de_gen3_x8_ast256</net_container>(SLAVE)APPS.coreclkout_hip,(MASTER)DUT.coreclkout_hip) 1 1 1 620
+preplace netloc POINT_TO_POINT<net_container>pcie_de_gen3_x8_ast256</net_container>(MASTER)DUT.rx_st,(SLAVE)APPS.rx_st) 1 1 1 520
+preplace netloc POINT_TO_POINT<net_container>pcie_de_gen3_x8_ast256</net_container>(SLAVE)DUT.hip_status,(SLAVE)APPS.hip_status) 1 0 2 150 50 580
+preplace netloc EXPORT<net_container>pcie_de_gen3_x8_ast256</net_container>(SLAVE)pcie_de_gen3_x8_ast256.reset,(SLAVE)clk_0.clk_in_reset) 1 0 2 NJ 770 NJ
+preplace netloc EXPORT<net_container>pcie_de_gen3_x8_ast256</net_container>(SLAVE)pcie_de_gen3_x8_ast256.clk,(SLAVE)clk_0.clk_in) 1 0 2 NJ 750 NJ
+preplace netloc POINT_TO_POINT<net_container>pcie_de_gen3_x8_ast256</net_container>(SLAVE)alt_xcvr_reconfig_0.reconfig_from_xcvr,(SLAVE)DUT.reconfig_from_xcvr) 1 0 4 130 890 NJ 890 NJ 890 NJ
+preplace netloc POINT_TO_POINT<net_container>pcie_de_gen3_x8_ast256</net_container>(SLAVE)DUT.lmi,(SLAVE)APPS.lmi) 1 0 2 170 550 NJ
+preplace netloc POINT_TO_POINT<net_container>pcie_de_gen3_x8_ast256</net_container>(SLAVE)DUT.hip_rst,(SLAVE)APPS.hip_rst) 1 0 2 130 30 640
+preplace netloc POINT_TO_POINT<net_container>pcie_de_gen3_x8_ast256</net_container>(SLAVE)DUT.reconfig_to_xcvr,(SLAVE)alt_xcvr_reconfig_0.reconfig_to_xcvr) 1 0 4 190 870 NJ 870 NJ 870 NJ
+preplace netloc EXPORT<net_container>pcie_de_gen3_x8_ast256</net_container>(SLAVE)pcie_de_gen3_x8_ast256.hip_ctrl,(SLAVE)DUT.hip_ctrl) 1 0 1 NJ
+preplace netloc POINT_TO_POINT<net_container>pcie_de_gen3_x8_ast256</net_container>(SLAVE)alt_xcvr_reconfig_0.reconfig_busy,(SLAVE)pcie_reconfig_driver_0.reconfig_busy) 1 2 2 910 850 NJ
+levelinfo -pg 1 0 80 1350
+levelinfo -hier pcie_de_gen3_x8_ast256 90 340 670 940 1180 1340

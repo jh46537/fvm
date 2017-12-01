@@ -1,0 +1,13 @@
+*.qdf
+*.qws
+*.ini
+*.bak
+Project/db/
+Project/incremental_db/
+Project/output_files/
+Sim/Source.exp
+Sim/Source.lib
+Sim/transcript
+Sim/vish_stacktrace.vstf
+Sim/altera_mf_ver/
+Sim/work/

@@ -1,0 +1,3 @@
+Modified the Interlaken scrambler seed from string to hex
+
+Changes to TX->RX serial loopback in simplex mode
