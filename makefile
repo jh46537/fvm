@@ -4,7 +4,7 @@ QUARTUSSH = C:\\altera\\15.1\\quartus\\bin64\\quartus_sh.exe
 QPROJ = device/Project/Project.qpf
 
 
-.PHONY: all host device device_build device_program clean clean_host clean_device run
+.PHONY: all host device device_build device_program clean clean_host clean_device run sim
 
 
 all: host device
@@ -37,3 +37,7 @@ clean_host:
 
 clean_device:
 	rm -rf device/Project/output_files
+
+sim:
+	cd device/Sim && \
+	    powershell "& ""./runSim.ps1"""
