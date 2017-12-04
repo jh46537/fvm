@@ -38,6 +38,9 @@ clean_host:
 clean_device:
 	rm -rf device/Project/output_files
 
+run:
+	build/fvm.exe
+
 sim:
 	cd device/Sim && \
 	    powershell "& ""./runSim.ps1"""

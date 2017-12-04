@@ -14,7 +14,7 @@ Remove-Item lpm -Recurse -ErrorAction Ignore
 Remove-Item altera_mf_ver -Recurse -ErrorAction Ignore
 
 # Set parameters
-$env:CATAPULT_COSIM_ARGS = "LoopbackStressTest 4 8 1 0"
+$env:CATAPULT_COSIM_ARGS = "fvm"
 echo "`nCatapult Academic Co-Simulation Framework`n`n"
 echo "Executing: $env:CATAPULT_COSIM_ARGS`n`n"
 
