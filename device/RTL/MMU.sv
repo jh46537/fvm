@@ -94,7 +94,7 @@ module MMU
     wire        pte_resps_Q_rd;
     
     // physical memory request history queue
-    AdvMemReq   oldest_mem_phy_req;
+    AdvMemReq   oldest_phy_mem_req;
     
     wire        phy_mem_reqs_HQ_full;
     wire        phy_mem_reqs_HQ_empty;
@@ -107,7 +107,7 @@ module MMU
     wire        phy_mem_resps_Q_full;
     wire        phy_mem_resps_Q_empty;
     wire        phy_mem_resps_Q_wr;
-    wire        phy_mem_resps_Q_rd;
+    reg         phy_mem_resps_Q_rd;
     
     // virtual memory response buffer queue
     MemResp     vir_mem_resps_ready     [NUM_APPS-1:0];
@@ -198,7 +198,7 @@ module MMU
         .rdreq(vir_mem_reqs_HQ_rd)
     );
     
-    assign pte_resps_Q_wr = (!pte_resps_Q_full) & pte_resps.valid;
+    assign pte_resps_Q_wr = (!pte_resps_Q_full) & oldest_phy_mem_req.isPTEReq & (!phy_mem_reqs_HQ_empty) & (!phy_mem_resps_Q_empty);
     assign pte_resps_Q_rd = (!pte_resps_Q_empty) & (!vir_mem_reqs_HQ_empty) & (phy_mem_reqs_selector == NUM_APPS) & (!phy_mem_reqs_Q_full);
     
     FIFO
@@ -291,13 +291,17 @@ module MMU
 
     always @(*)
     begin
-        if (oldest_mem_phy_req.isPTEReq && oldest_mem_phy_req.valid)
+        if (oldest_phy_mem_req.isPTEReq && oldest_phy_mem_req.valid)
         begin
             phy_mem_reqs_HQ_rd = (!phy_mem_reqs_HQ_empty) & (!phy_mem_resps_Q_empty) & (!pte_resps_Q_full);
         end
-        else if ((!oldest_mem_phy_req.isPTEReq) && oldest_mem_phy_req.valid)
+        else if ((!oldest_phy_mem_req.isPTEReq) && oldest_phy_mem_req.valid)
         begin
             phy_mem_reqs_HQ_rd = (!phy_mem_reqs_HQ_empty) & (!phy_mem_resps_Q_empty) & (!pte_resps_Q_full);
+        end
+        else
+        begin
+            phy_mem_reqs_HQ_rd = 1'b0;
         end
     end
     
@@ -313,7 +317,7 @@ module MMU
         .wrreq(phy_mem_reqs_HQ_wr),
         .data(adv_phy_mem_reqs),
         .full(phy_mem_reqs_HQ_full),
-        .q(oldest_mem_phy_req),
+        .q(oldest_phy_mem_req),
         .empty(phy_mem_reqs_HQ_empty),
         .rdreq(phy_mem_reqs_HQ_rd)
     );
@@ -324,11 +328,11 @@ module MMU
     
     always @(*)
     begin
-        if (oldest_mem_phy_req.isPTEReq && oldest_mem_phy_req.valid)
+        if (oldest_phy_mem_req.isPTEReq && oldest_phy_mem_req.valid)
         begin
             phy_mem_resps_Q_rd = (!phy_mem_reqs_HQ_empty) & (!phy_mem_resps_Q_empty) & (!pte_resps_Q_full);
         end
-        else if ((!oldest_mem_phy_req.isPTEReq) && oldest_mem_phy_req.valid)
+        else if ((!oldest_phy_mem_req.isPTEReq) && oldest_phy_mem_req.valid)
         begin
             phy_mem_resps_Q_rd = (!phy_mem_reqs_HQ_empty) & (!phy_mem_resps_Q_empty) & (!pte_resps_Q_full);
         end
@@ -351,19 +355,21 @@ module MMU
     );
     
     assign pte_resps = '{
-        valid: oldest_mem_phy_req.isPTEReq,
+        valid: oldest_phy_mem_req.isPTEReq,
         data: phy_mem_resps_buffered.data
     };
+
+    MemResp     vir_mem_resps_qout  [NUM_APPS-1:0];
     
     generate
         for (i = 0; i < NUM_APPS; i = i + 1)
         begin:VirMemResps
             assign vir_mem_resps_ready[i] = '{
-                valid: (~oldest_mem_phy_req.isPTEReq & (i == oldest_mem_phy_req.appId)),
+                valid: (~oldest_phy_mem_req.isPTEReq & (i == oldest_phy_mem_req.appId)),
                 data: phy_mem_resps_buffered.data
             };
             
-            assign vir_mem_resps_BQ_wr[i] = (!vir_mem_resps_BQ_full[i]) & (!phy_mem_reqs_HQ_empty) & (!phy_mem_resps_Q_empty) & (oldest_mem_phy_req.appId == i);
+            assign vir_mem_resps_BQ_wr[i] = (!vir_mem_resps_BQ_full[i]) & (!phy_mem_reqs_HQ_empty) & (!phy_mem_resps_Q_empty) & (!oldest_phy_mem_req.isPTEReq) & (oldest_phy_mem_req.appId == i);
             assign vir_mem_resps_BQ_rd[i] = (!vir_mem_resps_BQ_empty[i]) & vir_mem_resp_grants[i];
             
             FIFO
@@ -378,10 +384,13 @@ module MMU
                 .wrreq(vir_mem_resps_BQ_wr[i]),
                 .data(vir_mem_resps_ready[i]),
                 .full(vir_mem_resps_BQ_full[i]),
-                .q(vir_mem_resps[i]),
+                .q(vir_mem_resps_qout[i]),
                 .empty(vir_mem_resps_BQ_empty[i]),
                 .rdreq(vir_mem_resps_BQ_rd[i])
             );
+
+            assign vir_mem_resps[i].valid = vir_mem_resps_qout[i].valid & (!vir_mem_resps_BQ_empty[i]);
+            assign vir_mem_resps[i].data = vir_mem_resps_qout[i].data;
         end
     endgenerate
     
