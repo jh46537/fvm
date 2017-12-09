@@ -69,15 +69,15 @@ module SimMMU ();
             assign vir_mem_reqs[i].data = vir_mem_reqs_data[i];
             assign vir_mem_reqs[i].addr = vir_mem_reqs_addr[i];
 
-            assign vir_mem_resps[i].valid = vir_mem_resps_valid[i];
-            assign vir_mem_resps[i].data = vir_mem_resps_data[i];
+            assign vir_mem_resps_valid[i] =  vir_mem_resps[i].valid;
+            assign vir_mem_resps_data[i] = vir_mem_resps[i].data;
         end
     endgenerate
 
-    assign phy_mem_reqs.valid = phy_mem_reqs_valid;
-    assign phy_mem_reqs.isWrite = phy_mem_reqs_isWrite;
-    assign phy_mem_reqs.data = phy_mem_reqs_data;
-    assign phy_mem_reqs.addr = phy_mem_reqs_addr;
+    assign phy_mem_reqs_valid = phy_mem_reqs.valid;
+    assign phy_mem_reqs_isWrite = phy_mem_reqs.isWrite;
+    assign phy_mem_reqs_addr = phy_mem_reqs.addr;
+    assign phy_mem_reqs_data = phy_mem_reqs.data;
 
     assign phy_mem_resps.valid = phy_mem_resps_valid;
     assign phy_mem_resps.data = phy_mem_resps_data;
@@ -131,6 +131,7 @@ module SimMMU ();
         end
     endgenerate
 
+    // system initialization and reset
     initial
     begin
     	#0
@@ -143,32 +144,119 @@ module SimMMU ();
     	phy_mem_resps_valid = 1'b0;
 
     	#100
-    	rst = 1'b0;
+    	rst = 1'b0;    	
 
-    	#200
-    	vir_mem_reqs_valid[0] = 1'b1;
-    	vir_mem_reqs_isWrite[0] = 1'b0;
-    	vir_mem_reqs_addr[0] = 32'h00030003;
+    	#100000
+    	$finish;
+    end
+
+    // virtual memory request
+    initial
+    begin
+        wait(rst == 1'b0);
+
+        #100
+        vir_mem_reqs_valid[0] = 1'b1;
+        vir_mem_reqs_isWrite[0] = 1'b0;
+        vir_mem_reqs_addr[0] = 32'h00030003;
 
         #10
         vir_mem_reqs_valid[0] = 1'b0;
 
-        #1000
-        phy_mem_resps_valid = 1'b1;
-        phy_mem_resps_data = 32'h42;
+        #10
+        wait(vir_mem_req_grants[0] == 1'b1);
 
         #10
-        phy_mem_resps_valid = 1'b0;
-
-        #1000
-        phy_mem_resps_valid = 1'b1;
-        phy_mem_resps_data = 'd98;
+        vir_mem_reqs_valid[0] = 1'b1;
+        vir_mem_reqs_isWrite[0] = 1'b0;
+        vir_mem_reqs_addr[0] = 32'h00550004;
 
         #10
-        phy_mem_resps_valid = 1'b0;
+        vir_mem_reqs_valid[0] = 1'b0;
+    end
 
-    	#10000
-    	$finish;
+    // physical memory response
+    initial
+    begin
+        wait(phy_mem_reqs_valid == 1'b1);
+        fork
+            #1000
+            phy_mem_resps_valid = 1'b1;
+            phy_mem_resps_data = 32'h42;
+
+            #1010
+            phy_mem_resps_valid = 1'b0;
+        join_none
+        wait(phy_mem_reqs_valid == 1'b0);
+
+        wait(phy_mem_reqs.valid == 1'b1);
+        fork
+            #1000
+            phy_mem_resps_valid = 1'b1;
+            phy_mem_resps_data = 'h98;
+
+            #1010
+            phy_mem_resps_valid = 1'b0;
+        join_none
+        wait(phy_mem_reqs_valid == 1'b0);
+
+        wait(phy_mem_reqs.valid == 1'b1);
+        fork
+            #1000
+            phy_mem_resps_valid = 1'b1;
+            phy_mem_resps_data = 'h98;
+
+            #1010
+            phy_mem_resps_valid = 1'b0;
+        join_none
+        wait(phy_mem_reqs_valid == 1'b0);
+
+        wait(phy_mem_reqs.valid == 1'b1);
+        fork
+            #1000
+            phy_mem_resps_valid = 1'b1;
+            phy_mem_resps_data = 'h1234;
+
+            #1010
+            phy_mem_resps_valid = 1'b0;
+        join_none
+        wait(phy_mem_reqs_valid == 1'b0);
+    end
+
+    // physical memory request
+    initial
+    begin
+        wait(phy_mem_reqs_valid == 1'b1);
+        assert(phy_mem_reqs_addr == 'h898) $display("pass");
+        assert(phy_mem_reqs_isWrite == 1'b0) $display("pass");
+        wait(phy_mem_reqs_valid == 1'b0);
+
+        wait(phy_mem_reqs.valid == 1'b1);
+        assert(phy_mem_reqs_addr == 'h00420003) $display("pass");
+        assert(phy_mem_reqs_isWrite == 1'b0) $display("pass");
+        wait(phy_mem_reqs_valid == 1'b0);
+
+        wait(phy_mem_reqs.valid == 1'b1);
+        assert(phy_mem_reqs_addr == 'h154) $display("pass");
+        assert(phy_mem_reqs_isWrite == 1'b0) $display("pass");
+        wait(phy_mem_reqs_valid == 1'b0);
+
+        wait(phy_mem_reqs.valid == 1'b1);
+        assert(phy_mem_reqs_addr == 'h00980004) $display("pass");
+        assert(phy_mem_reqs_isWrite == 1'b0) $display("pass");
+        wait(phy_mem_reqs_valid == 1'b0);
+    end
+
+    // virtual memory response
+    initial
+    begin
+        wait(vir_mem_resps_valid[0] == 1'b1);
+        assert(vir_mem_resps_data[0] == 'h98) $display("pass");
+        wait(vir_mem_resps_valid[0] == 1'b0);
+
+        wait(vir_mem_resps_valid[0] == 1'b1);
+        assert(vir_mem_resps_data[0] == 'h1234) $display("pass");
+        wait(vir_mem_resps_valid[0] == 1'b0);
     end
 
 endmodule
