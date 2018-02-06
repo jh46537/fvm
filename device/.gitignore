@@ -9,5 +9,6 @@ Sim/Source.exp
 Sim/Source.lib
 Sim/transcript
 Sim/vish_stacktrace.vstf
+Sim/vsim_stacktrace.vstf
 Sim/altera_mf_ver/
 Sim/work/
