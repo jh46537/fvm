@@ -11,8 +11,11 @@ int main(int argc, char** argv) {
     slot0.send(sizeof(PCIEData));
 
     // Write data
+    std::cout << "write data" << std::endl;
     for (DWORD i = 0; i < SLOT_SIZE / sizeof(DWORD); ++i) {
-        slot0.write(i, rand());
+        int data = rand();
+        slot0.write(i, data);
+        std::cout << data << std::endl;
     }
     slot0.send(SLOT_SIZE);
 
@@ -21,9 +24,10 @@ int main(int argc, char** argv) {
     slot0.writePCIE(0, rd_cmd.data());
     slot0.send(sizeof(PCIEData));
 
-    // Write data
+    // Read data
+    std::cout << "read data" << std::endl;
     DWORD size = slot0.receive();
     for (DWORD i = 0; i < size; ++i) {
-        slot0.read(i);
+        std::cout << slot0.read(i) << std::endl;
     }
 }

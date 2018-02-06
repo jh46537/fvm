@@ -31,6 +31,7 @@ device_program:
 
 clean: clean_host clean_device
 	rm -rf build/
+	git clean -Xf
 
 clean_host:
 	rm -rf host/proj/x64
